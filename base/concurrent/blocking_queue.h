@@ -1,7 +1,9 @@
 #pragma once
 
 #include <atomic>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 
 namespace wheel {
 namespace base {
@@ -9,11 +11,11 @@ namespace base {
 template <typename T>
 class BlockingQueue {
  public:
-  explict BlockingQueue(uint64_t capacity);
+  BlockingQueue(uint64_t capacity);
   virtual ~BlockingQueue();
 
-  BlockingQueue(const BlockingQueue& other);
-  operator=(const BlockingQueue& other);
+  BlockingQueue(const BlockingQueue& other) = delete;
+  operator=(const BlockingQueue& other) = delete;
 
   void Push(T& t);
 
@@ -28,6 +30,9 @@ class BlockingQueue {
   std::atomic<uint64_t> tail_;
   std::unique_ptr<T> data_;
   uint64_t capacity_;
+
+  std::mutex mutex_;
+  std::condition_variable cv_;
 };
 
 
@@ -38,34 +43,33 @@ BlockingQueue<T>::BlockingQueue(uint64_t capacity)
 }
 
 template<typename T>
-void BlockingQueue::Push(T& t) {
+void BlockingQueue<T>::Push(T& t) {
   // full
-
-  // 
-  if (head_ + 1 > capacity_)
-    head_ = 0;
-  else
+  if (tail_ - head_ > capacity_) {
     head_++;
-  data_[head_] = t;
+  }
 
-  // notifyAll
-  condition.notifyAll();
+  // push 
+  tail_++;
+  data_[tail_] = t;
+
+  // notify all consumer
+  std::unique_lock<std::mutex> lck(mutex_);
+  cv_.notify_all();
 }
 
 template<typename T>
-T& BlockingQueue::Pop() {
+T& BlockingQueue<T>::Pop() {
   // wait for condition
-  while(condition) {
-
+  std::unique_lock<std::mutex> lck(mutex_);
+  while(tail_ == head_) {
+    cv_.wait(lck);
   }
 
-  // if valid
-  T& d = data[tail_];
-  if (tail_ + 1 > capacity_)
-    tail_ = 0;
-  else
-    tail_++;
-  
+  // 
+  head_++;
+  T& d = data[head_ - 1];
+
   return d;
 }
 
