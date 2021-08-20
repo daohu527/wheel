@@ -15,6 +15,6 @@ cc_test(
   ],
   deps = [
     ":blocking_queue",
-    "@gtest//:main",
+    "@com_google_googletest//:gtest_main",
   ]
 )

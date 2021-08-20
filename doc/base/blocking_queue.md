@@ -20,7 +20,9 @@ The first problem we solve is `multiple producer multiple consumer`.
 `condition_variable` handle this task through the producer and consumer patterns of the design pattern. It provides ordering.
 
 #### semaphore
-
+Semaphores are like a mixture of "mutexes" and "condition variables".
 
 #### atomic
 In order to introduce lock-free, we added the atomic type. the queue's head and tail use a atomic type. and then we need to move the head and tail to make the things work. Next we need to introduce atomic types.  
+
+atomic is interesting but multi atomic oprate is not atomic. Of course, lock-free will bring many problems, such as you always need to pay attention to whether the operation is atomic. I am often driven crazy by this problem in the process of writing code.  

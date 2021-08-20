@@ -75,16 +75,17 @@ BlockingQueue<T>::~BlockingQueue() {
 template<typename T>
 void BlockingQueue<T>::Push(T& t) {
   // full
-  while (size_.load() > capacity_) {
-    head_++;
+  while (size_.load() >= capacity_) {
+    tail_++;
+    size_--;
   }
 
   // push 
-  uint64_t old_tail = tail_.load();
-  while(!tail_.compare_exchange_weak(old_tail, old_tail + 1)) {
+  uint64_t old_head = head_.load();
+  while(!head_.compare_exchange_weak(old_head, old_head + 1)) {
 
   }
-  data_[old_tail % capacity_] = t;
+  data_[old_head % capacity_] = t;
   size_++;
 
   // notify all consumer
@@ -98,13 +99,13 @@ T BlockingQueue<T>::Pop() {
   Wait();
 
   // 
-  uint64_t old_head = head_.load();
-  while(!head_.compare_exchange_weak(old_head, old_head - 1)) {
+  uint64_t old_tail = tail_.load();
+  while(!tail_.compare_exchange_weak(old_tail, old_tail + 1)) {
 
   }
   size_--;
 
-  return data[old_head % capacity_];
+  return data[old_tail % capacity_];
 }
 
 template<typename T>

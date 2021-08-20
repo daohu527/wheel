@@ -21,7 +21,7 @@ namespace wheel {
 namespace base {
 
 TEST(PushTest, single) {
-  BlockingQueue<int> q = new BlockingQueue<int>();
+  BlockingQueue<int> q = new BlockingQueue<int>(100);
   q.Push(1);
   q.Push(2);
 
