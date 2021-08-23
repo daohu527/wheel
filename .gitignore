@@ -1,3 +1,9 @@
+# dir
+/bazel-bin
+/bazel-out
+/bazel-testlogs
+/bazel-wheel
+
 # Prerequisites
 *.d
 
