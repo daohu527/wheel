@@ -28,15 +28,16 @@ namespace base {
 template <typename T>
 class BlockingQueue {
  public:
-  explict BlockingQueue(const uint64_t capacity);
+  explicit BlockingQueue(const uint64_t capacity);
   virtual ~BlockingQueue();
 
   BlockingQueue(const BlockingQueue& other) = delete;
-  operator=(const BlockingQueue& other) = delete;
+  BlockingQueue& operator=(const BlockingQueue& other) = delete;
 
+  void Push(T t);
   void Push(T& t);
 
-  T& Pop();
+  T Pop();
 
   bool Empty() const { return !size_.load(); }
 
@@ -62,7 +63,7 @@ class BlockingQueue {
 
 template <typename T>
 BlockingQueue<T>::BlockingQueue(const uint64_t capacity) 
-    : head_(0), tail_(0), capacity_(capacity) {
+    : capacity_(capacity), head_(0), tail_(0), size_(0) {
   data_ = new T[capacity];
 }
 
@@ -94,6 +95,27 @@ void BlockingQueue<T>::Push(T& t) {
 }
 
 template<typename T>
+void BlockingQueue<T>::Push(T t) {
+  // full
+  while (size_.load() >= capacity_) {
+    tail_++;
+    size_--;
+  }
+
+  // push 
+  uint64_t old_head = head_.load();
+  while(!head_.compare_exchange_weak(old_head, old_head + 1)) {
+
+  }
+  data_[old_head % capacity_] = t;
+  size_++;
+
+  // notify all consumer
+  std::unique_lock<std::mutex> lck(mutex_);
+  cv_.notify_all();
+}
+
+template<typename T>
 T BlockingQueue<T>::Pop() {
   // wait for condition
   Wait();
@@ -105,7 +127,7 @@ T BlockingQueue<T>::Pop() {
   }
   size_--;
 
-  return data[old_tail % capacity_];
+  return data_[old_tail % capacity_];
 }
 
 template<typename T>

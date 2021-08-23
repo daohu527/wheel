@@ -1,4 +1,4 @@
-load("//tools:cpplint.bzl", "cpplint")
+#load("//tools:cpplint.bzl", "cpplint")
 
 cc_library(
   name = "blocking_queue",

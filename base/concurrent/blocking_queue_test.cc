@@ -17,15 +17,44 @@
 
 #include "gtest/gtest.h"
 
+#include "base/concurrent/blocking_queue.h"
+
 namespace wheel {
 namespace base {
 
-TEST(PushTest, single) {
-  BlockingQueue<int> q = new BlockingQueue<int>(100);
-  q.Push(1);
-  q.Push(2);
+TEST(BlockingQueue, size) {
+  auto q = new BlockingQueue<int>(100);
+  q->Push(1);
+  q->Push(2);
 
-  EXPECT_EQ(q.Size() == 2);
+  EXPECT_TRUE(q->Size() == 2);
+}
+
+TEST(BlockingQueue, single) {
+  auto q = new BlockingQueue<int>(100);
+  q->Push(1);
+  q->Push(2);
+
+  EXPECT_EQ(q->Pop(), 1);
+  EXPECT_EQ(q->Pop(), 2);
+  EXPECT_TRUE(q->Empty());
+}
+
+TEST(BlockingQueue, overwrite) {
+  auto q = new BlockingQueue<int>(5);
+  for(int i = 0; i < 6; i++) {
+    q->Push((int)i);
+  }
+
+  EXPECT_EQ(q->Pop(), 1);
+  EXPECT_EQ(q->Pop(), 2);
+  EXPECT_EQ(q->Pop(), 3);
+  EXPECT_EQ(q->Pop(), 4);
+  EXPECT_EQ(q->Pop(), 5);
+}
+
+TEST(BlockingQueue, multithread) {
+
 }
 
 }
