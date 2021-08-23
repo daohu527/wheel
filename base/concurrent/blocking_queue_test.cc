@@ -43,7 +43,7 @@ TEST(BlockingQueue, single) {
 TEST(BlockingQueue, overwrite) {
   auto q = new BlockingQueue<int>(5);
   for(int i = 0; i < 6; i++) {
-    q->Push((int)i);
+    q->Push(i);
   }
 
   EXPECT_EQ(q->Pop(), 1);
