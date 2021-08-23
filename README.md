@@ -10,13 +10,21 @@ In addition, we hope to provide the concept of `data flow` to better manage and 
 
 Finally, we focus on building the underlying system and do not involve any algorithms. We will provide package management tools to support the entire system.
 
-
 ## Features
 Finally, we summarize the advantages of this project.
-1. New publish and subscribe mechanism  
+1. New publish and subscribe mechanism
 2. Streaming data processing method
 3. Package management method
 
+## Quick start
+
+#### Environment
+* Operating system: Ubuntu 18.04
+* Bazel version: 4.2.0
+
+#### Build
+1. Install bazel through this [doc](https://docs.bazel.build/versions/4.0.0/install-ubuntu.html).  
+2. Enter the `wheel` directory, and run the `./build.sh`.
 
 ## Contribute
 This project is still in the process of improvement. We will update the design document synchronously and gradually improve it！
