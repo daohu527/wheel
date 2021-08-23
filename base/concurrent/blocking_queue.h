@@ -34,8 +34,7 @@ class BlockingQueue {
   BlockingQueue(const BlockingQueue& other) = delete;
   BlockingQueue& operator=(const BlockingQueue& other) = delete;
 
-  void Push(T t);
-  void Push(T& t);
+  void Push(const T& t);
 
   T Pop();
 
@@ -74,28 +73,7 @@ BlockingQueue<T>::~BlockingQueue() {
 }
 
 template<typename T>
-void BlockingQueue<T>::Push(T& t) {
-  // full
-  while (size_.load() >= capacity_) {
-    tail_++;
-    size_--;
-  }
-
-  // push 
-  uint64_t old_head = head_.load();
-  while(!head_.compare_exchange_weak(old_head, old_head + 1)) {
-
-  }
-  data_[old_head % capacity_] = t;
-  size_++;
-
-  // notify all consumer
-  std::unique_lock<std::mutex> lck(mutex_);
-  cv_.notify_all();
-}
-
-template<typename T>
-void BlockingQueue<T>::Push(T t) {
+void BlockingQueue<T>::Push(const T& t) {
   // full
   while (size_.load() >= capacity_) {
     tail_++;
