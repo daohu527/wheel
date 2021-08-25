@@ -20,3 +20,6 @@ We use hash linked list to achieve it.
 5. build function test
 6. callback function test
 7. multi-thread safe
+
+## todo
+1. add Iterator method
