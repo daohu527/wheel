@@ -37,18 +37,27 @@ class ExpireLRUCache {
     K key;
     V value;
     Timestamp timestamp;
-  }
+  };
   using NodePtr = std::shared_ptr<Node>;
   using NodeIter = typename std::list<NodePtr>::iterator;
 
  public:
   using ExpiredCallBack = std::function<void(const K&, const V&)>;
 
-  explict ExpireLRUCache(size_t max_size) 
-      : capacity_(max_size), timeout_(3000), expired_callback_(nullptr) {}
+  explicit ExpireLRUCache(size_t max_size) 
+      : capacity_(max_size), 
+        timeout_(3000), 
+        expired_callback_(nullptr), 
+        read_refresh_flag_(false) {}
 
-  ExpireLRUCache(size_t max_size, uint32_t timeout, ExpiredCallBack callback) 
-      : capacity_(max_size), timeout_(timeout), expired_callback_(callback) {}
+  ExpireLRUCache(size_t max_size, 
+                 uint32_t timeout, 
+                 ExpiredCallBack callback, 
+                 bool read_refresh_flag = false) 
+      : capacity_(max_size), 
+        timeout_(timeout), 
+        expired_callback_(callback),
+        read_refresh_flag_(read_refresh_flag) {}
 
   ExpireLRUCache(const ExpireLRUCache&) = delete;
   ExpireLRUCache& operator=(const ExpireLRUCache&) = delete;
@@ -68,7 +77,7 @@ class ExpireLRUCache {
  private:
   // todo(zero): We now use global locks,
   // which can be replaced by atomic locks later
-  std::mutex mutex_;
+  mutable std::mutex mutex_;
 
   std::unordered_map<K, NodeIter> map_;
   std::list<NodePtr> list_;
@@ -76,6 +85,7 @@ class ExpireLRUCache {
   size_t capacity_;
   uint32_t timeout_;
   ExpiredCallBack expired_callback_;
+  bool read_refresh_flag_;
 };
 
 template <typename K, typename V>
@@ -104,23 +114,29 @@ void ExpireLRUCache<K,V>::add(const K& key, const V& value) {
 template <typename K, typename V>
 V ExpireLRUCache<K, V>::get(const K& key) {
   std::lock_guard<std::mutex> lock(mutex_);
+  // todo(zero): need to move to timer
+  expired();
 
   // not exist
-  if (map_.find(key) == map.end()) {
+  if (map_.find(key) == map_.end()) {
     return V{};
   }
   // exist, update timestamp
   NodePtr node_ptr = *map_[key];
-  node_ptr->timestamp = std::chrono::system_clock::now();
-  list_.erase(map_[key]);
-  list_.push_front(node_ptr);
-  map_[key] = list_.begin();
+  if (read_refresh_flag_) {
+    node_ptr->timestamp = std::chrono::system_clock::now();
+    list_.erase(map_[key]);
+    list_.push_front(node_ptr);
+    map_[key] = list_.begin();
+  }
   return node_ptr->value;
 }
 
 template <typename K, typename V>
 void ExpireLRUCache<K, V>::expired() {
-  std::lock_guard<std::mutex> lock(mutex_);
+  // todo(zero): if we call in get, need to disable this.
+  // if we move to a timer, we should use a lock.
+  // std::lock_guard<std::mutex> lock(mutex_);
 
   auto time_now = std::chrono::system_clock::now();
   while( !list_.empty() ) {
