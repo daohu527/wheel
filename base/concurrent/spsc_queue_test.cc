@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//  Created Date: 2021-8-20
+//  Created Date: 2021-8-24
 //  Author: daohu527
+
+#include "gtest/gtest.h"
+
+#include "base/concurrent/spsc_queue.h"
+
 
 namespace wheel {
 namespace base {
 
-struct BaseObject {
-  BaseObject() {}
-  ~BaseObject() {}
-};
+TEST(SPSCQueue, enqueue) {
 
+}
 
-template <typename T>
-class ObjectPool {
+TEST(SPSCQueue, dequeue) {
 
-};
+}
 
 }  // namespace base
 }  // namespace wheel

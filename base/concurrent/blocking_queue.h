@@ -28,24 +28,33 @@ namespace base {
 template <typename T>
 class BlockingQueue {
  public:
-  explicit BlockingQueue(const uint64_t capacity);
-  virtual ~BlockingQueue();
+  BlockingQueue(const BlockingQueue&) = delete;
+  BlockingQueue& operator=(const BlockingQueue&) = delete;
 
-  BlockingQueue(const BlockingQueue& other) = delete;
-  BlockingQueue& operator=(const BlockingQueue& other) = delete;
+  explicit BlockingQueue(uint64_t capacity) 
+      : capacity_(capacity), head_(0), tail_(0), size_(0) {
+    data_ = new T[capacity];
+  }
 
-  void Push(const T& t);
+  virtual ~BlockingQueue() {
+    if (data_ != nullptr) {
+      delete[] data_;
+      data_ = nullptr;
+    }
+  }
 
-  T Pop();
+  void enqueue(const T& t);
 
-  bool Empty() const { return !size_.load(); }
+  T dequeue();
 
-  size_t Size() const { return size_.load(); }
+  bool empty() const { return !size_.load(); }
 
-  size_t Capacity() const { return capacity_; }
+  size_t size() const { return size_.load(); }
+
+  size_t capacity() const { return capacity_; }
  
  private:
-  void Wait();
+  void wait();
 
  private:
   T* data_;
@@ -60,27 +69,15 @@ class BlockingQueue {
 };
 
 
-template <typename T>
-BlockingQueue<T>::BlockingQueue(const uint64_t capacity) 
-    : capacity_(capacity), head_(0), tail_(0), size_(0) {
-  data_ = new T[capacity];
-}
-
-template <typename T>
-BlockingQueue<T>::~BlockingQueue() {
-  delete[] data_;
-  data_ = nullptr;
-}
-
 template<typename T>
-void BlockingQueue<T>::Push(const T& t) {
+void BlockingQueue<T>::enqueue(const T& t) {
   // full
   while (size_.load() >= capacity_) {
     tail_++;
     size_--;
   }
 
-  // push 
+  // enqueue 
   uint64_t old_head = head_.load();
   while(!head_.compare_exchange_weak(old_head, old_head + 1)) {
 
@@ -94,9 +91,9 @@ void BlockingQueue<T>::Push(const T& t) {
 }
 
 template<typename T>
-T BlockingQueue<T>::Pop() {
+T BlockingQueue<T>::dequeue() {
   // wait for condition
-  Wait();
+  wait();
 
   // 
   uint64_t old_tail = tail_.load();
@@ -109,7 +106,7 @@ T BlockingQueue<T>::Pop() {
 }
 
 template<typename T>
-void BlockingQueue<T>::Wait() {
+void BlockingQueue<T>::wait() {
   std::unique_lock<std::mutex> lck(mutex_);
   while(!size_.load()) {
     cv_.wait(lck);

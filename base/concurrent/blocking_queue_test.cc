@@ -24,38 +24,38 @@ namespace base {
 
 TEST(BlockingQueue, size) {
   auto q = new BlockingQueue<int>(100);
-  q->Push(1);
-  q->Push(2);
+  q->enqueue(1);
+  q->enqueue(2);
 
-  EXPECT_TRUE(q->Size() == 2);
+  EXPECT_TRUE(q->size() == 2);
 }
 
 TEST(BlockingQueue, single) {
   auto q = new BlockingQueue<int>(100);
-  q->Push(1);
-  q->Push(2);
+  q->enqueue(1);
+  q->enqueue(2);
 
-  EXPECT_EQ(q->Pop(), 1);
-  EXPECT_EQ(q->Pop(), 2);
-  EXPECT_TRUE(q->Empty());
+  EXPECT_EQ(q->dequeue(), 1);
+  EXPECT_EQ(q->dequeue(), 2);
+  EXPECT_TRUE(q->empty());
 }
 
 TEST(BlockingQueue, overwrite) {
   auto q = new BlockingQueue<int>(5);
   for(int i = 0; i < 6; i++) {
-    q->Push((int)i);
+    q->enqueue(i);
   }
 
-  EXPECT_EQ(q->Pop(), 1);
-  EXPECT_EQ(q->Pop(), 2);
-  EXPECT_EQ(q->Pop(), 3);
-  EXPECT_EQ(q->Pop(), 4);
-  EXPECT_EQ(q->Pop(), 5);
+  EXPECT_EQ(q->dequeue(), 1);
+  EXPECT_EQ(q->dequeue(), 2);
+  EXPECT_EQ(q->dequeue(), 3);
+  EXPECT_EQ(q->dequeue(), 4);
+  EXPECT_EQ(q->dequeue(), 5);
 }
 
 TEST(BlockingQueue, multithread) {
 
 }
 
-}
-}
+}    // namespace base
+}    // namespace wheel
