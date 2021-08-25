@@ -75,7 +75,7 @@ class ExpireLRUCache {
   void expired();
 
  private:
-  // todo(zero): We now use global locks,
+  // todo(daohu527): We now use global locks,
   // which can be replaced by atomic locks later
   mutable std::mutex mutex_;
 
@@ -114,7 +114,7 @@ void ExpireLRUCache<K,V>::add(const K& key, const V& value) {
 template <typename K, typename V>
 V ExpireLRUCache<K, V>::get(const K& key) {
   std::lock_guard<std::mutex> lock(mutex_);
-  // todo(zero): need to move to timer
+  // todo(daohu527): need to move to timer
   expired();
 
   // not exist
@@ -134,7 +134,7 @@ V ExpireLRUCache<K, V>::get(const K& key) {
 
 template <typename K, typename V>
 void ExpireLRUCache<K, V>::expired() {
-  // todo(zero): if we call in get, need to disable this.
+  // todo(daohu527): if we call in get, need to disable this.
   // if we move to a timer, we should use a lock.
   // std::lock_guard<std::mutex> lock(mutex_);
 

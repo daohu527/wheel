@@ -15,25 +15,16 @@
 //  Created Date: 2021-8-25
 //  Author: daohu527
 
-#pragma once
+#pragma once 
 
-#include <functional>
 
 namespace wheel {
 namespace timer {
 
-class Timer {
- public:
-  using Callback = std::function<void()>;
-  Timer(int interval, int time_uint, Callback callback, bool run_once_flag);
+class TimeWheel {
 
-  void start();
-
-  void stop();
-
- private:
-  Callback callback_;
 };
+
 
 }  // namespace timer
 }  // namespace wheel
