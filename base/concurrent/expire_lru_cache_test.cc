@@ -21,79 +21,79 @@
 #include "gtest/gtest.h"
 #include "base/concurrent/expire_lru_cache.h"
 
-namespace shudao {
+namespace wheel {
 namespace base {
 
 
-TEST(AddTest, Add) {
+TEST(AddTest, add) {
   ExpireLRUCache<int, std::string> cache(5);
-  cache.Add(1, "aaa");
-  EXPECT_EQ(cache.Get(1), "aaa");
-  cache.Add(2, "bbb");
-  EXPECT_EQ(cache.Get(1), "aaa");
-  EXPECT_EQ(cache.Get(2), "bbb");
+  cache.add(1, "aaa");
+  EXPECT_EQ(cache.get(1), "aaa");
+  cache.add(2, "bbb");
+  EXPECT_EQ(cache.get(1), "aaa");
+  EXPECT_EQ(cache.get(2), "bbb");
 
-  cache.Add(1, "ccc");
-  EXPECT_EQ(cache.Get(1), "ccc");
+  cache.add(1, "ccc");
+  EXPECT_EQ(cache.get(1), "ccc");
 
-  EXPECT_EQ(cache.Size(), 2);
+  EXPECT_EQ(cache.size(), 2);
 }
 
 TEST(AddFullTest, AddFull) {
   ExpireLRUCache<int, std::string> cache(5);
-  cache.Add(1, "aaa");
-  cache.Add(2, "bbb");
-  cache.Add(3, "ccc");
-  cache.Add(4, "ddd");
-  cache.Add(5, "eee");
-  cache.Add(6, "fff");     
-  EXPECT_EQ(cache.Size(), 5);
+  cache.add(1, "aaa");
+  cache.add(2, "bbb");
+  cache.add(3, "ccc");
+  cache.add(4, "ddd");
+  cache.add(5, "eee");
+  cache.add(6, "fff");     
+  EXPECT_EQ(cache.size(), 5);
 
-  EXPECT_EQ(cache.Get(1), "");
-  EXPECT_EQ(cache.Get(2), "bbb");
-  EXPECT_EQ(cache.Get(3), "ccc");
-  EXPECT_EQ(cache.Get(4), "ddd");
-  EXPECT_EQ(cache.Get(5), "eee");
-  EXPECT_EQ(cache.Get(6), "fff");
+  EXPECT_EQ(cache.get(1), "");
+  EXPECT_EQ(cache.get(2), "bbb");
+  EXPECT_EQ(cache.get(3), "ccc");
+  EXPECT_EQ(cache.get(4), "ddd");
+  EXPECT_EQ(cache.get(5), "eee");
+  EXPECT_EQ(cache.get(6), "fff");
 }
 
-TEST(GetTest, Get) {
+TEST(GetTest, get) {
   ExpireLRUCache<int, std::string> cache(5);
-  cache.Add(1, "aaa");
-  cache.Add(2, "bbb");
+  cache.add(1, "aaa");
+  cache.add(2, "bbb");
 
-  EXPECT_EQ(cache.Get(1), "aaa");
-  EXPECT_EQ(cache.Get(2), "bbb");
-  EXPECT_EQ(cache.Get(5), "");
+  EXPECT_EQ(cache.get(1), "aaa");
+  EXPECT_EQ(cache.get(2), "bbb");
+  EXPECT_EQ(cache.get(5), "");
 }
 
 TEST(ExpireTest, Expire) {
   ExpireLRUCache<int, std::string> cache(5, 10, [] (int, std::string){});
-  cache.Add(1, "aaa");
-  EXPECT_EQ(cache.Get(1), "aaa");
+  cache.add(1, "aaa");
+  EXPECT_EQ(cache.get(1), "aaa");
   std::this_thread::sleep_for(std::chrono::milliseconds(15));
-  EXPECT_EQ(cache.Get(1), "");
-  EXPECT_EQ(cache.Size(), 0);
+  EXPECT_EQ(cache.get(1), "");
+  EXPECT_EQ(cache.size(), 0);
 }
 
 TEST(ExpireOldestTest, ExpireOldest) {
   ExpireLRUCache<int, std::string> cache(5, 10, [] (int, std::string){});
-  cache.Add(1, "aaa");
-  cache.Add(2, "bbb");
+  cache.add(1, "aaa");
+  cache.add(2, "bbb");
   
-  EXPECT_EQ(cache.Get(1), "aaa");
-  EXPECT_EQ(cache.Get(2), "bbb");
+  EXPECT_EQ(cache.get(1), "aaa");
+  EXPECT_EQ(cache.get(2), "bbb");
   std::this_thread::sleep_for(std::chrono::milliseconds(9));
-  EXPECT_EQ(cache.Get(1), "aaa");
-  EXPECT_EQ(cache.Get(2), "bbb");
-  EXPECT_EQ(cache.Get(3), "");
+  EXPECT_EQ(cache.get(1), "aaa");
+  EXPECT_EQ(cache.get(2), "bbb");
+  EXPECT_EQ(cache.get(3), "");
 
-  cache.Add(2, "nnn");
-  cache.Add(3, "ccc");
+  cache.add(2, "nnn");
+  cache.add(3, "ccc");
   std::this_thread::sleep_for(std::chrono::milliseconds(2));
-  EXPECT_EQ(cache.Get(1), "");
-  EXPECT_EQ(cache.Get(2), "nnn");
-  EXPECT_EQ(cache.Get(3), "ccc");
+  EXPECT_EQ(cache.get(1), "");
+  EXPECT_EQ(cache.get(2), "nnn");
+  EXPECT_EQ(cache.get(3), "ccc");
 }
 
 TEST(ExpireCallbackTest, ExpireCallback) {
@@ -104,11 +104,11 @@ TEST(ExpireCallbackTest, ExpireCallback) {
       key = k;
       value = v;
     });
-  cache.Add(1, "aaa");
-  EXPECT_EQ(cache.Get(1), "aaa");
-  EXPECT_EQ(cache.Size(), 1);
+  cache.add(1, "aaa");
+  EXPECT_EQ(cache.get(1), "aaa");
+  EXPECT_EQ(cache.size(), 1);
   std::this_thread::sleep_for(std::chrono::milliseconds(15));
-  EXPECT_EQ(cache.Get(1), "");
+  EXPECT_EQ(cache.get(1), "");
   EXPECT_EQ(key, 1);
   EXPECT_EQ(value, "aaa");
 }

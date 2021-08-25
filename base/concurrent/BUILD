@@ -20,20 +20,20 @@ cc_test(
 )
 
 cc_library(
-  name = "spsc_queue",
+  name = "expire_lru_cache",
   hdrs = [
-    "spsc_queue.h",
+    "expire_lru_cache.h",
   ],
 )
 
 cc_test(
-  name = "spsc_queue_test",
+  name = "expire_lru_cache_test",
   size = "small",
   srcs = [
-    "spsc_queue_test.cc",
+    "expire_lru_cache_test.cc",
   ],
   deps = [
-    ":spsc_queue",
+    ":expire_lru_cache",
     "@com_google_googletest//:gtest_main",
   ]
 )
