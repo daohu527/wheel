@@ -19,16 +19,12 @@
 
 #include <memory>
 
+#include "base/macros.h"
+#include "timer/bucket.h"
+
 namespace wheel {
 namespace timer {
 
-struct Task {
-
-};
-
-struct Bucket {
-  std::unique_ptr<Task> task_list_;
-};
 
 class TimeWheel {
  public:
@@ -42,7 +38,9 @@ class TimeWheel {
   void schedule();
 
  private:
-  Bucket[] buckets_;
+  Bucket* buckets_;
+
+ DECLARE_SINGLETON(TimeWheel);
 };
 
 

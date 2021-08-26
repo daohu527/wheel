@@ -17,39 +17,35 @@
 
 #pragma once
 
-#include <functional>
+#include <memory>
+#include <mutex>
+
+#include "timer/ticket.h"
 
 namespace wheel {
 namespace timer {
 
 class Timer {
  public:
-  using Callback = std::function<void(void)>;
-
   enum TimeUnit {
     minutes, 
     seconds, 
     milliseconds,
   };
 
-  enum State {
-    active,
-    inactive,
-  };
-
-  Timer(Callback callback, uint32_t interval, TimeUnit unit, bool is_one_shot)
-      : callback_(callback),
+  Timer(Ticket::Task task, uint32_t interval, TimeUnit unit, bool is_one_shot)
+      : task_(task),
         interval_(interval),
         unit_(unit),
         delay_time_(0),
         is_one_shot_(is_one_shot) {}
 
-  Timer(Callback callback,
+  Timer(Ticket::Task task,
         uint32_t interval, 
         TimeUnit unit,
         uint32_t delay_time,
         bool is_one_shot)
-      : callback_(callback),
+      : task_(task),
         interval_(interval),
         unit_(unit),
         delay_time_(delay_time),
@@ -58,20 +54,25 @@ class Timer {
   Timer(const Timer&) = delete;
   Timer& operator=(const Timer&) = delete;
 
-  ~Timer();
+  ~Timer() = default;
 
   void start();
 
   void stop();
 
  private:
-  Callback callback_;
+  void createTicket();
+
+ private:
+  std::mutex mutex_;
+
+  Ticket::Task task_;
   uint32_t interval_;
   TimeUnit unit_;
   uint32_t delay_time_;
   bool is_one_shot_;
 
-  State state_;
+  std::unique_ptr<Ticket> ticket_ptr_;
 };
 
 }  // namespace timer

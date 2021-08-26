@@ -28,5 +28,9 @@ void Timer::stop() {
   // delete task from timewheel
 }
 
+void Timer::createTicket() {
+
+}
+
 }  // namespace timer
 }  // namespace wheel
