@@ -58,6 +58,8 @@ class ExpireLRUCache {
         timeout_(timeout), 
         expired_callback_(callback),
         read_refresh_flag_(read_refresh_flag) {}
+  
+  ~ExpireLRUCache() = default;
 
   ExpireLRUCache(const ExpireLRUCache&) = delete;
   ExpireLRUCache& operator=(const ExpireLRUCache&) = delete;

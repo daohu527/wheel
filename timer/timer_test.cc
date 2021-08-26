@@ -12,39 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//  Created Date: 2021-8-25
+//  Created Date: 2021-8-26
 //  Author: daohu527
 
-#pragma once 
+#include "gtest/gtest.h"
 
-#include <memory>
+#include "timer/timer.h"
 
 namespace wheel {
 namespace timer {
 
-struct Task {
+TEST(Timer, init) {
 
-};
+}
 
-struct Bucket {
-  std::unique_ptr<Task> task_list_;
-};
-
-class TimeWheel {
- public:
-  void tick();
-
-  void addTimer();
-
-  void delTimer();
-
- private:
-  void schedule();
-
- private:
-  Bucket[] buckets_;
-};
-
-
-}  // namespace timer
+}  // namespace timer 
 }  // namespace wheel

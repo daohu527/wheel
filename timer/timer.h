@@ -24,8 +24,41 @@ namespace timer {
 
 class Timer {
  public:
-  using Callback = std::function<void()>;
-  Timer(int interval, int time_uint, Callback callback, bool run_once_flag);
+  using Callback = std::function<void(void)>;
+
+  enum TimeUnit {
+    minutes, 
+    seconds, 
+    milliseconds,
+  };
+
+  enum State {
+    active,
+    inactive,
+  };
+
+  Timer(Callback callback, uint32_t interval, TimeUnit unit, bool is_one_shot)
+      : callback_(callback),
+        interval_(interval),
+        unit_(unit),
+        delay_time_(0),
+        is_one_shot_(is_one_shot) {}
+
+  Timer(Callback callback,
+        uint32_t interval, 
+        TimeUnit unit,
+        uint32_t delay_time,
+        bool is_one_shot)
+      : callback_(callback),
+        interval_(interval),
+        unit_(unit),
+        delay_time_(delay_time),
+        is_one_shot_(is_one_shot) {}
+  
+  Timer(const Timer&) = delete;
+  Timer& operator=(const Timer&) = delete;
+
+  ~Timer();
 
   void start();
 
@@ -33,6 +66,12 @@ class Timer {
 
  private:
   Callback callback_;
+  uint32_t interval_;
+  TimeUnit unit_;
+  uint32_t delay_time_;
+  bool is_one_shot_;
+
+  State state_;
 };
 
 }  // namespace timer
