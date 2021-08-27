@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-bazel build //base/concurrent:all
+bazel build //base:all

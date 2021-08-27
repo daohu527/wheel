@@ -12,10 +12,13 @@ namespace timer {
 class Bucket {
  public:
   // Get tasks to be scheduled
-  std::vector<Ticket::Task> checkTicket();
+  void checkAndRun();
+  void rebookTickets(std::list<Ticket::Ptr>& tickets);
 
  private:
-  void rebookTicket();
+  bool checkTickets();
+  void runTimeoutTask();
+
 
  private:
   std::unique_ptr<std::list<Ticket>> ticket_list_;

@@ -18,7 +18,6 @@
 #pragma once
 
 #include <memory>
-#include <mutex>
 
 #include "timer/ticket.h"
 
@@ -38,7 +37,9 @@ class Timer {
         interval_(interval),
         unit_(unit),
         delay_time_(0),
-        is_one_shot_(is_one_shot) {}
+        is_one_shot_(is_one_shot) {
+    createTicket();
+  }
 
   Timer(Ticket::Task task,
         uint32_t interval, 
@@ -49,7 +50,9 @@ class Timer {
         interval_(interval),
         unit_(unit),
         delay_time_(delay_time),
-        is_one_shot_(is_one_shot) {}
+        is_one_shot_(is_one_shot) {
+    createTicket();
+  }
   
   Timer(const Timer&) = delete;
   Timer& operator=(const Timer&) = delete;
@@ -61,18 +64,18 @@ class Timer {
   void stop();
 
  private:
+  uint32_t convertUnit();
+
   void createTicket();
 
  private:
-  std::mutex mutex_;
-
   Ticket::Task task_;
   uint32_t interval_;
   TimeUnit unit_;
   uint32_t delay_time_;
   bool is_one_shot_;
 
-  std::unique_ptr<Ticket> ticket_ptr_;
+  TimeWheel::TicketPtr ticket_ptr_;
 };
 
 }  // namespace timer

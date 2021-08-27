@@ -16,21 +16,44 @@
 //  Author: daohu527
 
 #include "timer/timer.h"
+#include "timer/time_wheel.h"
 
 namespace wheel {
 namespace timer {
 
 void Timer::start() {
   // add task to timewheel
+  TimeWheel::instance().addTicket(ticket_ptr_);
 }
 
 void Timer::stop() {
   // delete task from timewheel
+  TimeWheel::instance().delTicket(ticket_ptr_);
+}
+
+uint32_t Timer::convertUnit() {
+  uint32_t interval_mills = interval_;
+  switch (unit_) {
+    case Timer::minutes:
+      interval_mills *= 60*1000;
+      break;
+    case Timer::seconds:
+      interval_mills *= 1000;
+      break;
+    case Timer::milliseconds:
+      break;
+    default:
+      // todo(daohu527): error progress
+      break;
+  }
+  return interval_mills;
 }
 
 void Timer::createTicket() {
-
+  uint32_t interval_p = convertUnit();
+  ticket_ptr_ = std::make_shared<Ticket>(task_, interval_p, is_one_shot_);
 }
+
 
 }  // namespace timer
 }  // namespace wheel

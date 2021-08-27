@@ -32,7 +32,8 @@ namespace base {
 template <typename K, typename V>
 class ExpireLRUCache {
  private:
-  using Timestamp = std::chrono::time_point<std::chrono::system_clock>;
+  using Clock = std::chrono::steady_clock;
+  using Timestamp = std::chrono::time_point<Clock>;
   struct Node {
     K key;
     V value;
@@ -107,7 +108,7 @@ void ExpireLRUCache<K,V>::add(const K& key, const V& value) {
     list_.erase(iter);
   }
 
-  auto timestamp = std::chrono::system_clock::now();
+  auto timestamp = Clock::now();
   NodePtr node_ptr = std::make_shared<Node>(Node{key, value, timestamp});
   list_.push_front(node_ptr);
   map_[key] = list_.begin();
@@ -126,7 +127,7 @@ V ExpireLRUCache<K, V>::get(const K& key) {
   // exist, update timestamp
   NodePtr node_ptr = *map_[key];
   if (read_refresh_flag_) {
-    node_ptr->timestamp = std::chrono::system_clock::now();
+    node_ptr->timestamp = Clock::now();
     list_.erase(map_[key]);
     list_.push_front(node_ptr);
     map_[key] = list_.begin();
@@ -140,7 +141,7 @@ void ExpireLRUCache<K, V>::expired() {
   // if we move to a timer, we should use a lock.
   // std::lock_guard<std::mutex> lock(mutex_);
 
-  auto time_now = std::chrono::system_clock::now();
+  auto time_now = Clock::now();
   while( !list_.empty() ) {
     NodePtr oldest = list_.back();
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(

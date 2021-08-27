@@ -10,6 +10,8 @@
 ## Design
 We use hash linked list to achieve it. 
 
+The difference between `steady_clock` and `system_clock` is steady_clock represent clocks for which values of time_point never decrease as physical time advances. So we use steady_clock.
+
 (todo)The more controversial point is whether a separate timer is needed to clear expired elements.
 
 ## Testcase

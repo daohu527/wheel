@@ -15,18 +15,21 @@
 //  Created Date: 2021-8-27
 //  Author: daohu527
 
-#pragma once
+#include <string>
 
-#define DISALLOW_COPY_AND_ASSIGN(classname) \
-  classname(const classname&) = delete; \
-  classname& operator=(const classname&) = delete;
+#include "base/macros.h"
+#include "gtest/gtest.h"
 
-#define DECLARE_SINGLETON(classname) \
- public: \
-  static classname& instance() { \
-    static classname object; \
-    return object; \
-  } \
-  DISALLOW_COPY_AND_ASSIGN(classname) \
- private: \
-  classname() {}
+
+struct People {
+  std::string name_ = "hong";
+  int age_ = 18;
+
+  int age() { return age_; }
+  DECLARE_SINGLETON(People)
+};
+
+TEST(singleton, create_test) {
+  EXPECT_EQ(People::instance().name_, "hong");
+  EXPECT_EQ(People::instance().age(), 18);
+}

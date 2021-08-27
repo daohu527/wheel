@@ -18,6 +18,8 @@
 #pragma once 
 
 #include <memory>
+#include <mutex>
+#include <thread>
 
 #include "base/macros.h"
 #include "timer/bucket.h"
@@ -28,17 +30,39 @@ namespace timer {
 
 class TimeWheel {
  public:
+  TimeWheel();
+  virtual ~TimeWheel();
+
+  TimeWheel(const TimeWheel&) = delete;
+  TimeWheel& operator=(const TimeWheel&) = delete;
+
   void tick();
 
-  void addTimer();
+  bool addTicket(Ticket::Ptr ticket_ptr);
 
-  void delTimer();
+  bool delTicket(Ticket::Ptr ticket_ptr);
 
  private:
   void schedule();
 
  private:
-  Bucket* buckets_;
+  // default interval 1ms  
+  static constexpr int DEFAULT_TICK_INTERVAL = 1;
+  static constexpr int MILLISECOND_BUCKET_SIZE = 1000;
+  static constexpr int SECOND_BUCKET_SIZE = 60;
+  static constexpr int MINUTE_BUCKET_SIZE = 60;
+
+  std::mutex mutex_;
+
+  Bucket buckets_[MILLISECOND_BUCKET_SIZE];
+
+  uint32_t millisecond_index_;
+  uint32_t second_index_;
+  uint32_t minute_index_;
+
+  std::chrono::duration<std::chrono::milliseconds> interval_;
+
+  std::thread wheel_thread_;
 
  DECLARE_SINGLETON(TimeWheel);
 };
