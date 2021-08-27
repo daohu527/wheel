@@ -32,7 +32,8 @@ namespace base {
 template <typename K, typename V>
 class ExpireLRUCache {
  private:
-  using Timestamp = std::chrono::time_point<std::chrono::system_clock>;
+  using Clock = std::chrono::steady_clock;
+  using Timestamp = std::chrono::time_point<Clock>;
   struct Node {
     K key;
     V value;
@@ -58,6 +59,8 @@ class ExpireLRUCache {
         timeout_(timeout), 
         expired_callback_(callback),
         read_refresh_flag_(read_refresh_flag) {}
+  
+  ~ExpireLRUCache() = default;
 
   ExpireLRUCache(const ExpireLRUCache&) = delete;
   ExpireLRUCache& operator=(const ExpireLRUCache&) = delete;
@@ -75,7 +78,7 @@ class ExpireLRUCache {
   void expired();
 
  private:
-  // todo(zero): We now use global locks,
+  // todo(daohu527): We now use global locks,
   // which can be replaced by atomic locks later
   mutable std::mutex mutex_;
 
@@ -105,7 +108,7 @@ void ExpireLRUCache<K,V>::add(const K& key, const V& value) {
     list_.erase(iter);
   }
 
-  auto timestamp = std::chrono::system_clock::now();
+  auto timestamp = Clock::now();
   NodePtr node_ptr = std::make_shared<Node>(Node{key, value, timestamp});
   list_.push_front(node_ptr);
   map_[key] = list_.begin();
@@ -114,7 +117,7 @@ void ExpireLRUCache<K,V>::add(const K& key, const V& value) {
 template <typename K, typename V>
 V ExpireLRUCache<K, V>::get(const K& key) {
   std::lock_guard<std::mutex> lock(mutex_);
-  // todo(zero): need to move to timer
+  // todo(daohu527): need to move to timer
   expired();
 
   // not exist
@@ -124,7 +127,7 @@ V ExpireLRUCache<K, V>::get(const K& key) {
   // exist, update timestamp
   NodePtr node_ptr = *map_[key];
   if (read_refresh_flag_) {
-    node_ptr->timestamp = std::chrono::system_clock::now();
+    node_ptr->timestamp = Clock::now();
     list_.erase(map_[key]);
     list_.push_front(node_ptr);
     map_[key] = list_.begin();
@@ -134,11 +137,11 @@ V ExpireLRUCache<K, V>::get(const K& key) {
 
 template <typename K, typename V>
 void ExpireLRUCache<K, V>::expired() {
-  // todo(zero): if we call in get, need to disable this.
+  // todo(daohu527): if we call in get, need to disable this.
   // if we move to a timer, we should use a lock.
   // std::lock_guard<std::mutex> lock(mutex_);
 
-  auto time_now = std::chrono::system_clock::now();
+  auto time_now = Clock::now();
   while( !list_.empty() ) {
     NodePtr oldest = list_.back();
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(
