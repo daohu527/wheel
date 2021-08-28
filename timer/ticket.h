@@ -7,11 +7,12 @@
 namespace wheel {
 namespace timer {
 
+typedef TicketPtr std::shared_ptr<Ticket>;
+
 class Ticket {
  public:
   using TicketId = uint64_t;
   using Task = std::function<void(void)>;
-  using Ptr = std::shared_ptr<Ticket>;
   
   // todo(daohu527) : how to generate ticket id?
   Ticket(Task task, uint64_t interval, bool is_one_shot)
