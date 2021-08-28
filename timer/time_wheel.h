@@ -38,9 +38,9 @@ class TimeWheel {
 
   void tick();
 
-  bool addTicket(Ticket::Ptr ticket_ptr);
+  bool addTicket(TicketPtr ticket_ptr);
 
-  bool delTicket(Ticket::Ptr ticket_ptr);
+  bool delTicket(TicketPtr ticket_ptr);
 
  private:
   void schedule();
