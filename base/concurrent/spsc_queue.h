@@ -18,6 +18,7 @@
 #pragma once
 
 #include <atomic>
+#include <memory>
 #include <semaphore>
 
 namespace wheel {
@@ -26,51 +27,59 @@ namespace base {
 template <typename T>
 class SPSCQueue {
  public:
+  struct Node {
+    Node(T t) : val(t), next(nullptr) {}
+    T val;
+    Node* next;
+  };
+
   SPSCQueue(const SPSCQueue&) = delete;
   SPSCQueue& operator=(const SPSCQueue&) = delete;
 
-  explicit SPSCQueue(uint32_t size)
-      : size_(size),
-        data_(new T[capacity]),
-        readIndex_(0),
-        writeIndex_(0) {}
+  SPSCQueue();
 
-  virtual ~SPSCQueue() {
-    if (data_ != nullptr) {
-      delete[] data_;
-      data_ = nullptr;
-    }
-  }
+  virtual ~SPSCQueue();
 
-  bool enqueue(const T& t) {
+  bool waitEnqueue(const T& t);
 
-  }
-
-  bool waitEnqueue(const T& t) {
-    
-  }
-
-  T dequeue() {
-
-  }
-
-  T waitDequeue() {
-
-  }
-
-  bool empty() const {}
+  bool waitDequeue(T& t);
 
  private:
-  using AtomicIndex = std::atomic<unsigned int>;
+  Node* head_;
+  Node* tail_;
 
-  const uint32_t size_;
-  T* const data_;
-  AtomicIndex readIndex_;
-  AtomicIndex writeIndex_;
-
-  std::binary_semaphore readSemaphore_;
-  std::binary_semaphore writeSemaphore_;
+  std::counting_semaphore readSemaphore_;
 };
+
+
+template <typename T>
+SPSCQueue::SPSCQueue() : head_(nullptr), tail_(nullptr), readSemaphore_(0) {}
+
+template <typename T>
+SPSCQueue::~SPSCQueue() {
+
+}
+
+template <typename T>
+bool SPSCQueue::enqueue(const T& t) {
+  if (!tail_) {
+    tail_ = new Node(t);
+    head_ = tail_;
+  } else {
+    tail_->next = new Node(t);
+    tail_ = tail_->next;
+  }
+  readSemaphore_.release();
+  return true;
+}
+
+template <typename T>
+bool SPSCQueue::waitDequeue(T& t) {
+  readSemaphore_.acquire();
+  t = head_->val;
+  head_ = head_->next;
+  return true;
+}
 
 
 }  // namespace base
