@@ -26,25 +26,22 @@ namespace base {
 template <typename T>
 class SPSCQueue {
  public:
-  typedef size_t size_type;
-  constexpr size_t LOCKFREE_CACHELINE_BYTES = 64;
+  static constexpr size_t LOCKFREE_CACHELINE_BYTES = 64;
 
   SPSCQueue(const SPSCQueue&) = delete;
   SPSCQueue& operator=(const SPSCQueue&) = delete;
 
-  explicit SPSCQueue(size_type size)
+  explicit SPSCQueue(size_t size)
       : size_(size + 1),
-        storage_(new T[size_]),
+        storage_(new T[size + 1]),
         head_(0),
         tail_(0) {
-    std::assert(size > 0);
+    assert(size > 0);
   }
-
 
   ~SPSCQueue() {
     if (storage_) {
       delete[] storage_;
-      storage_ = nullptr;
     }
   }
 
@@ -56,9 +53,9 @@ class SPSCQueue {
 
   bool empty() const;
 
-  size_type size() const;
+  size_t size() const;
 
-  size_type capacity() const {
+  size_t capacity() const {
     return size_ - 1;
   }
 
@@ -66,7 +63,7 @@ class SPSCQueue {
   using index_type = uint64_t;
   using AtomicIndex = std::atomic<index_type>;
   
-  index_type nextIndex(const index_type& index) {
+  index_type nextIndex(index_type index) {
     index += 1;
     while(index >= size_) {
       index -= size_;
@@ -75,9 +72,10 @@ class SPSCQueue {
   }
 
  private:
-  const size_type size_;
+  const size_t size_;
   T* const storage_;
-
+  
+  // todo(daohu527): need to check alignas
   alignas(LOCKFREE_CACHELINE_BYTES) AtomicIndex head_;
   alignas(LOCKFREE_CACHELINE_BYTES) AtomicIndex tail_;
 };
@@ -105,6 +103,7 @@ bool SPSCQueue<T>::dequeue(T& t) {
   auto next_head = nextIndex(cur_head);
   t = storage_[cur_head];
   // memory order
+  // todo(daohu527): need to check memory order
   head_.store(next_head, std::memory_order_relaxed);
   return true;
 }
@@ -116,13 +115,13 @@ bool SPSCQueue<T>::empty() const {
 }
 
 template <typename T>
-size_type SPSCQueue<T>::size() const {
-  auto cur_head = head_.load(std::memory_order_relaxed);
-  auto cur_tail = tail_.load(std::memory_order_relaxed);
-  if (cur_tail > cur_head)
-    return cur_tail - cur_head;
+size_t SPSCQueue<T>::size() const {
+  auto diff = tail_.load(std::memory_order_relaxed)
+          - head_.load(std::memory_order_relaxed);
+  if (diff > 0)
+    return diff;
   
-  return cur_tail + (size_ - 1) - cur_head;
+  return diff + capacity();
 }
 
 

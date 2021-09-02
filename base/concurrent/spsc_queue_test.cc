@@ -35,7 +35,7 @@ TEST(SPSCQueue, dequeue) {
   SPSCQueue<int> q(5);
   q.enqueue(1);
   q.enqueue(2);
-  int t;
+  int t = 0;
   q.dequeue(t);
   EXPECT_EQ(t, 1);
   q.dequeue(t);
