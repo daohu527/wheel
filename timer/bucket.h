@@ -13,7 +13,7 @@ class Bucket {
  public:
   // Get tasks to be scheduled
   void checkAndRun();
-  void rebookTickets(std::list<Ticket::Ptr>& tickets);
+  void rebookTickets(std::list<TicketPtr>& tickets);
 
  private:
   bool checkTickets();

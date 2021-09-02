@@ -21,12 +21,12 @@ TimeWheel::~TimeWheel() {
   // release wheel_thread_
 }
 
-bool TimeWheel::addTicket(Ticket::Ptr ticket_ptr) {
+bool TimeWheel::addTicket(TicketPtr ticket_ptr) {
   std::lock_guard<std::mutex> lock(mutex_);
   // add ticket to bucket
 }
 
-bool TimeWheel::delTicket(Ticket::Ptr ticket_ptr) {
+bool TimeWheel::delTicket(TicketPtr ticket_ptr) {
   std::lock_guard<std::mutex> lock(mutex_);
   // del ticket to bucket
 }
@@ -59,9 +59,9 @@ void TimeWheel::schedule() {
     buckets_[millisecond_index_].checkAndRun();
 
     // 3. book new tickets
-    std::list<Ticket::Ptr> tickets;
+    std::list<TicketPtr> tickets;
     buckets_[millisecond_index_].rebookTickets(tickets);
-    for (Ticket::Ptr ticket_p: tickets) {
+    for (TicketPtr ticket_p: tickets) {
       addTicket(ticket_p);
     }
   }

@@ -18,7 +18,7 @@
 #pragma once
 
 #include <atomic>
-#include <semaphore>
+#include <cassert>
 
 namespace wheel {
 namespace base {
@@ -26,51 +26,103 @@ namespace base {
 template <typename T>
 class SPSCQueue {
  public:
+  static constexpr size_t LOCKFREE_CACHELINE_BYTES = 64;
+
   SPSCQueue(const SPSCQueue&) = delete;
   SPSCQueue& operator=(const SPSCQueue&) = delete;
 
-  explicit SPSCQueue(uint32_t size)
-      : size_(size),
-        data_(new T[capacity]),
-        readIndex_(0),
-        writeIndex_(0) {}
+  explicit SPSCQueue(size_t size)
+      : size_(size + 1),
+        storage_(new T[size + 1]),
+        head_(0),
+        tail_(0) {
+    assert(size > 0);
+  }
 
-  virtual ~SPSCQueue() {
-    if (data_ != nullptr) {
-      delete[] data_;
-      data_ = nullptr;
+  ~SPSCQueue() {
+    if (storage_) {
+      delete[] storage_;
     }
   }
 
-  bool enqueue(const T& t) {
+  // Producer only
+  bool enqueue(const T& t);
 
+  // Consumer only
+  bool dequeue(T& t);
+
+  bool empty() const;
+
+  size_t size() const;
+
+  size_t capacity() const {
+    return size_ - 1;
   }
-
-  bool waitEnqueue(const T& t) {
-    
-  }
-
-  T dequeue() {
-
-  }
-
-  T waitDequeue() {
-
-  }
-
-  bool empty() const {}
 
  private:
-  using AtomicIndex = std::atomic<unsigned int>;
+  using index_type = uint64_t;
+  using AtomicIndex = std::atomic<index_type>;
+  
+  index_type nextIndex(index_type index) {
+    index += 1;
+    while(index >= size_) {
+      index -= size_;
+    }
+    return index;
+  }
 
-  const uint32_t size_;
-  T* const data_;
-  AtomicIndex readIndex_;
-  AtomicIndex writeIndex_;
-
-  std::binary_semaphore readSemaphore_;
-  std::binary_semaphore writeSemaphore_;
+ private:
+  const size_t size_;
+  T* const storage_;
+  
+  // todo(daohu527): need to check alignas
+  alignas(LOCKFREE_CACHELINE_BYTES) AtomicIndex head_;
+  alignas(LOCKFREE_CACHELINE_BYTES) AtomicIndex tail_;
 };
+
+
+template <typename T>
+bool SPSCQueue<T>::enqueue(const T& t) {
+  auto cur_tail = tail_.load(std::memory_order_relaxed);
+  auto next_tail = nextIndex(cur_tail);
+  // full
+  if (next_tail == head_.load(std::memory_order_relaxed))
+    return false;
+
+  storage_[cur_tail] = t;
+  tail_.store(next_tail, std::memory_order_relaxed);
+  return true;
+}
+
+template <typename T>
+bool SPSCQueue<T>::dequeue(T& t) {
+  auto cur_head = head_.load(std::memory_order_relaxed);
+  if (cur_head == tail_.load(std::memory_order_relaxed))
+    return false;
+
+  auto next_head = nextIndex(cur_head);
+  t = storage_[cur_head];
+  // memory order
+  // todo(daohu527): need to check memory order
+  head_.store(next_head, std::memory_order_relaxed);
+  return true;
+}
+
+template <typename T>
+bool SPSCQueue<T>::empty() const {
+  return head_.load(std::memory_order_relaxed)
+            == tail_.load(std::memory_order_relaxed);
+}
+
+template <typename T>
+size_t SPSCQueue<T>::size() const {
+  auto diff = tail_.load(std::memory_order_relaxed)
+          - head_.load(std::memory_order_relaxed);
+  if (diff > 0)
+    return diff;
+  
+  return diff + capacity();
+}
 
 
 }  // namespace base
