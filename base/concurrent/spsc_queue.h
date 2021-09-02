@@ -18,8 +18,7 @@
 #pragma once
 
 #include <atomic>
-#include <memory>
-#include <semaphore>
+#include <cassert>
 
 namespace wheel {
 namespace base {
@@ -27,58 +26,103 @@ namespace base {
 template <typename T>
 class SPSCQueue {
  public:
-  struct Node {
-    Node(T t) : val(t), next(nullptr) {}
-    T val;
-    Node* next;
-  };
+  typedef size_t size_type;
+  constexpr size_t LOCKFREE_CACHELINE_BYTES = 64;
 
   SPSCQueue(const SPSCQueue&) = delete;
   SPSCQueue& operator=(const SPSCQueue&) = delete;
 
-  SPSCQueue();
+  explicit SPSCQueue(size_type size)
+      : size_(size + 1),
+        storage_(new T[size_]),
+        head_(0),
+        tail_(0) {
+    std::assert(size > 0);
+  }
 
-  virtual ~SPSCQueue();
 
-  bool waitEnqueue(const T& t);
+  ~SPSCQueue() {
+    if (storage_) {
+      delete[] storage_;
+      storage_ = nullptr;
+    }
+  }
 
-  bool waitDequeue(T& t);
+  // Producer only
+  bool enqueue(const T& t);
+
+  // Consumer only
+  bool dequeue(T& t);
+
+  bool empty() const;
+
+  size_type size() const;
+
+  size_type capacity() const {
+    return size_ - 1;
+  }
 
  private:
-  Node* head_;
-  Node* tail_;
+  using index_type = uint64_t;
+  using AtomicIndex = std::atomic<index_type>;
+  
+  index_type nextIndex(const index_type& index) {
+    index += 1;
+    while(index >= size_) {
+      index -= size_;
+    }
+    return index;
+  }
 
-  std::counting_semaphore readSemaphore_;
+ private:
+  const size_type size_;
+  T* const storage_;
+
+  alignas(LOCKFREE_CACHELINE_BYTES) AtomicIndex head_;
+  alignas(LOCKFREE_CACHELINE_BYTES) AtomicIndex tail_;
 };
 
 
 template <typename T>
-SPSCQueue::SPSCQueue() : head_(nullptr), tail_(nullptr), readSemaphore_(0) {}
+bool SPSCQueue<T>::enqueue(const T& t) {
+  auto cur_tail = tail_.load(std::memory_order_relaxed);
+  auto next_tail = nextIndex(cur_tail);
+  // full
+  if (next_tail == head_.load(std::memory_order_relaxed))
+    return false;
 
-template <typename T>
-SPSCQueue::~SPSCQueue() {
-
-}
-
-template <typename T>
-bool SPSCQueue::enqueue(const T& t) {
-  if (!tail_) {
-    tail_ = new Node(t);
-    head_ = tail_;
-  } else {
-    tail_->next = new Node(t);
-    tail_ = tail_->next;
-  }
-  readSemaphore_.release();
+  storage_[cur_tail] = t;
+  tail_.store(next_tail, std::memory_order_relaxed);
   return true;
 }
 
 template <typename T>
-bool SPSCQueue::waitDequeue(T& t) {
-  readSemaphore_.acquire();
-  t = head_->val;
-  head_ = head_->next;
+bool SPSCQueue<T>::dequeue(T& t) {
+  auto cur_head = head_.load(std::memory_order_relaxed);
+  if (cur_head == tail_.load(std::memory_order_relaxed))
+    return false;
+
+  auto next_head = nextIndex(cur_head);
+  t = storage_[cur_head];
+  // memory order
+  head_.store(next_head, std::memory_order_relaxed);
   return true;
+}
+
+template <typename T>
+bool SPSCQueue<T>::empty() const {
+  return head_.load(std::memory_order_relaxed)
+            == tail_.load(std::memory_order_relaxed);
+}
+
+template <typename T>
+size_type SPSCQueue<T>::size() const {
+  auto cur_head = head_.load(std::memory_order_relaxed);
+  auto cur_tail = tail_.load(std::memory_order_relaxed);
+  if (cur_tail > cur_head)
+    return cur_tail - cur_head;
+  
+  return cur_tail + (size_ - 1) - cur_head;
 }
 
 

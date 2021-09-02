@@ -24,11 +24,23 @@ namespace wheel {
 namespace base {
 
 TEST(SPSCQueue, enqueue) {
-
+  SPSCQueue<int> q(5);
+  q.enqueue(1);
+  q.enqueue(2);
+  EXPECT_EQ(q.size(), 2);
+  EXPECT_EQ(q.capacity(), 5);
 }
 
 TEST(SPSCQueue, dequeue) {
-
+  SPSCQueue<int> q(5);
+  q.enqueue(1);
+  q.enqueue(2);
+  int t;
+  q.dequeue(t);
+  EXPECT_EQ(t, 1);
+  q.dequeue(t);
+  EXPECT_EQ(t, 2);
+  EXPECT_TRUE(q.empty());
 }
 
 }  // namespace base
