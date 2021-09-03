@@ -13,7 +13,11 @@ There are three types of recycling objects. Here is a ref [link](https://cloud.t
 
 The above method is the same as the memory management method, 1 and 3 are C++ memory management methods, and 2 is Java memory management methods.  
 
+#### The user actively releases resources
+We will provide an active release interface.
+
 ## Benchmarks
 1. Poco::ObjectPool
+2. Boost::pool
 
 ## Testcase

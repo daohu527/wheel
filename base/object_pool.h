@@ -15,18 +15,41 @@
 //  Created Date: 2021-8-20
 //  Author: daohu527
 
+#pragma once
+
+#include <functional>
+
 namespace wheel {
 namespace base {
 
-struct BaseObject {
-  BaseObject() {}
-  ~BaseObject() {}
+template <class T>
+class ObjectFactory {
+ public:
+  template <class ...Args>
+  T createObject(Args&&... args);
+
+  void destroyObject();
 };
 
 
-template <typename T>
+template <class T, class F = ObjectFactory<T>>
 class ObjectPool {
+ public:
+  using Predicate = std::function<bool(T&)>;
 
+  ObjectPool(std::size_t capacity, std::size_t max_capacity);
+
+  ObjectPool(std::size_t capacity, std::size_t max_capacity, F factory);
+
+  ObjectPool(std::size_t capacity, std::size_t max_capacity, F factory, Predicate pred);
+
+  bool borrowObject(T& t);
+
+  void returnObject(T& t);
+
+ private:
+
+ DECLARE_SINGLETON(ObjectPool)
 };
 
 }  // namespace base
