@@ -17,40 +17,145 @@
 
 #pragma once
 
+#include <assert>
 #include <functional>
+#include <list>
+#include <memory>
+#include <mutex>
+
 
 namespace wheel {
 namespace base {
 
-template <class T>
+template <class C, class P = C*>
 class ObjectFactory {
  public:
   template <class ...Args>
-  T createObject(Args&&... args);
+  P createObject(Args&&... args) {
+    return new C(std::forward<Args>(args)...);
+  }
 
-  void destroyObject();
+  void destroyObject(P ptr) {
+    delete ptr;
+  }
 };
 
+template <class C>
+class ObjectFactory <C, std::shared_ptr<C>> {
+ public:
+  template <class ...Args>
+  std::shared_ptr<C> createObject(Args&&... args) {
+    return std::make_shared<C>(std::forward<Args>(args)...);
+  }
 
-template <class T, class F = ObjectFactory<T>>
+  void destroyObject(std::shared_ptr<C> ptr) {}
+};
+
+template <class C, class P = C*, class F = ObjectFactory<C, P>>
 class ObjectPool {
  public:
-  using Predicate = std::function<bool(T&)>;
+  using size_type = std::size_t;
+  using Predicate = std::function<bool(P)>;
 
-  ObjectPool(std::size_t capacity, std::size_t max_capacity);
+  ObjectPool(size_type capacity, size_type peak_capacity)
+      : capacity_(capacity),
+        peak_capacity_(peak_capacity),
+        size_(0) {
+    assert(capacity_ <= peak_capacity_);
+  }
 
-  ObjectPool(std::size_t capacity, std::size_t max_capacity, F factory);
+  ObjectPool(size_type capacity, size_type peak_capacity, F factory)
+      : capacity_(capacity),
+        peak_capacity_(peak_capacity),
+        size_(0),
+        factory_(factory) {
+    assert(capacity_ <= peak_capacity_);
+  }
 
-  ObjectPool(std::size_t capacity, std::size_t max_capacity, F factory, Predicate pred);
+  ObjectPool(size_type capacity, 
+             size_type peak_capacity, 
+             F factory, 
+             Predicate pred)
+      : capacity_(capacity),
+        peak_capacity_(peak_capacity),
+        size_(0),
+        factory_(factory),
+        pred_(pred) {
+    assert(capacity_ <= peak_capacity_);
+  }
 
-  bool borrowObject(T& t);
+  ~ObjectPool() {
+    typename std::list<P>::iterator it = pool_.begin();
+    while (it != pool_.end()) {
+      factory_.destroyObject(*it);
+      ++it;
+    }
+  }
 
-  void returnObject(T& t);
+  P borrowObject();
+
+  void returnObject(P ptr);
+
+  size_type capacity() const {
+    return capacity_;
+  }
+
+  size_type peak_capacity() const {
+    return peak_capacity_;
+  }
+
+  size_type size() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return size_;
+  }
+
+  size_type available() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return peak_capacity_ - size_ + _pool.size();
+  }
 
  private:
+  const size_type capacity_;
+  const size_type peak_capacity_;
+  size_type size_;
+  std::list<P> pool_;
+
+  F factory_;
+  Predicate pred_;
+
+  mutable std::mutex mutex_;
 
  DECLARE_SINGLETON(ObjectPool)
 };
+
+template <class C, class P = C*, class F = ObjectFactory<C, P>>
+P ObjectPool<C, P, F>::borrowObject() {
+  std::lock_guard<std::mutex> lock(mutex_);
+
+  if (!pool_.empty()) {
+    P ptr = pool_.front();
+    pool_.pop_front();
+    return ptr;
+  } else if (size_ < peak_capacity_) {
+    P ptr = factory_.createObject();
+    size_++;
+    return ptr;
+  } else {
+    return nullptr;
+  }
+}
+
+template <class C, class P = C*, class F = ObjectFactory<C, P>>
+void ObjectPool<C, P, F>::returnObject(P ptr) {
+  std::lock_guard<std::mutex> lock(mutex_);
+
+  if (size_ < capacity_) {
+    pool_.push_front(ptr);
+  } else {
+    factory_.destroyObject(ptr);
+    size_--;
+  }
+}
 
 }  // namespace base
 }  // namespace wheel
