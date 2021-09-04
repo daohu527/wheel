@@ -64,7 +64,7 @@ class TimeWheel {
 
   std::thread wheel_thread_;
 
- DECLARE_SINGLETON(TimeWheel);
+ DECLARE_SINGLETON(TimeWheel)
 };
 
 

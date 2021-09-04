@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <assert>
+#include <cassert>
 #include <functional>
 #include <list>
 #include <memory>
@@ -56,6 +56,9 @@ class ObjectPool {
  public:
   using size_type = std::size_t;
   using Predicate = std::function<bool(P)>;
+
+  ObjectPool(const ObjectPool&) = delete;
+  ObjectPool& operator=(const ObjectPool&) = delete;
 
   ObjectPool(size_type capacity, size_type peak_capacity)
       : capacity_(capacity),
@@ -111,7 +114,7 @@ class ObjectPool {
 
   size_type available() const {
     std::lock_guard<std::mutex> lock(mutex_);
-    return peak_capacity_ - size_ + _pool.size();
+    return peak_capacity_ - size_ + pool_.size();
   }
 
  private:
@@ -124,11 +127,9 @@ class ObjectPool {
   Predicate pred_;
 
   mutable std::mutex mutex_;
-
- DECLARE_SINGLETON(ObjectPool)
 };
 
-template <class C, class P = C*, class F = ObjectFactory<C, P>>
+template <class C, class P, class F>
 P ObjectPool<C, P, F>::borrowObject() {
   std::lock_guard<std::mutex> lock(mutex_);
 
@@ -145,7 +146,7 @@ P ObjectPool<C, P, F>::borrowObject() {
   }
 }
 
-template <class C, class P = C*, class F = ObjectFactory<C, P>>
+template <class C, class P, class F>
 void ObjectPool<C, P, F>::returnObject(P ptr) {
   std::lock_guard<std::mutex> lock(mutex_);
 

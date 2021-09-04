@@ -22,8 +22,19 @@
 namespace wheel {
 namespace base {
 
-TEST(ObjectPool, init) {
+struct Object {
+ int x;
+};
 
+TEST(ObjectPool, init) {
+  ObjectPool<Object> pool(5, 10);
+  EXPECT_EQ(pool.capacity(), 5);
+  EXPECT_EQ(pool.peak_capacity(), 10);
+  EXPECT_EQ(pool.size(), 0);
+  
+  Object* obj = pool.borrowObject();
+  EXPECT_TRUE(obj);
+  EXPECT_EQ(pool.size(), 1);
 }
 
 }  // namespace base
