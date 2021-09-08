@@ -11,6 +11,9 @@ Use dynamic loading and it will count by itself. There are many additions to thi
 
 Here I am going to refer to the implementation of ros class_loader, but the code seems a bit difficult to understand, so I plan to refactor it.  
 
+## thread safe
+Thread safety of dlopen refer to https://stackoverflow.com/questions/9534666/shared-libraries-dlopen-and-thread-safety-of-library-static-pointers
+
 ## Reference
 https://github.com/ros/class_loader
 
