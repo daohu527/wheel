@@ -1,3 +1,6 @@
+// Copyright (c) 2004-2006, Applied Informatics Software Engineering GmbH.
+// and Contributors.
+
 // Copyright 2021 daohu527@gmail.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,3 +17,16 @@
 
 //  Created Date: 2021-9-8
 //  Author: daohu527
+
+#include <string>
+
+#include "gtest/gtest.h"
+#include "class_loader/lib/exceptions.h"
+
+TEST(SharedLibrary, load) {
+
+}
+
+TEST(SharedLibrary, unLoad) {
+
+}
