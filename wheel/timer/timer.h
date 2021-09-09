@@ -27,8 +27,8 @@ namespace timer {
 class Timer {
  public:
   enum TimeUnit {
-    minutes, 
-    seconds, 
+    minutes,
+    seconds,
     milliseconds,
   };
 
@@ -42,7 +42,7 @@ class Timer {
   }
 
   Timer(Ticket::Task task,
-        uint32_t interval, 
+        uint32_t interval,
         TimeUnit unit,
         uint32_t delay_time,
         bool is_one_shot)
@@ -53,7 +53,7 @@ class Timer {
         is_one_shot_(is_one_shot) {
     createTicket();
   }
-  
+
   Timer(const Timer&) = delete;
   Timer& operator=(const Timer&) = delete;
 

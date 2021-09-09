@@ -45,21 +45,21 @@ class ExpireLRUCache {
  public:
   using ExpiredCallBack = std::function<void(const K&, const V&)>;
 
-  explicit ExpireLRUCache(size_t max_size) 
-      : capacity_(max_size), 
-        timeout_(3000), 
-        expired_callback_(nullptr), 
+  explicit ExpireLRUCache(size_t max_size)
+      : capacity_(max_size),
+        timeout_(3000),
+        expired_callback_(nullptr),
         read_refresh_flag_(false) {}
 
-  ExpireLRUCache(size_t max_size, 
-                 uint32_t timeout, 
-                 ExpiredCallBack callback, 
-                 bool read_refresh_flag = false) 
-      : capacity_(max_size), 
-        timeout_(timeout), 
+  ExpireLRUCache(size_t max_size,
+                 uint32_t timeout,
+                 ExpiredCallBack callback,
+                 bool read_refresh_flag = false)
+      : capacity_(max_size),
+        timeout_(timeout),
         expired_callback_(callback),
         read_refresh_flag_(read_refresh_flag) {}
-  
+
   ~ExpireLRUCache() = default;
 
   ExpireLRUCache(const ExpireLRUCache&) = delete;
@@ -69,10 +69,10 @@ class ExpireLRUCache {
 
   V get(const K& key);
 
-  size_t size() const { 
+  size_t size() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return map_.size();
-  };
+  }
 
  private:
   void expired();
@@ -92,7 +92,7 @@ class ExpireLRUCache {
 };
 
 template <typename K, typename V>
-void ExpireLRUCache<K,V>::add(const K& key, const V& value) {
+void ExpireLRUCache<K, V>::add(const K& key, const V& value) {
   std::lock_guard<std::mutex> lock(mutex_);
   // if full, delete oldest
   if (map_.size() >= capacity_) {
@@ -142,7 +142,7 @@ void ExpireLRUCache<K, V>::expired() {
   // std::lock_guard<std::mutex> lock(mutex_);
 
   auto time_now = Clock::now();
-  while( !list_.empty() ) {
+  while ( !list_.empty() ) {
     NodePtr oldest = list_.back();
     auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(
                   time_now - oldest->timestamp);

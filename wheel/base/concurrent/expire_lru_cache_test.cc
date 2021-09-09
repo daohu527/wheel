@@ -46,7 +46,7 @@ TEST(AddFullTest, AddFull) {
   cache.add(3, "ccc");
   cache.add(4, "ddd");
   cache.add(5, "eee");
-  cache.add(6, "fff");     
+  cache.add(6, "fff");
   EXPECT_EQ(cache.size(), 5);
 
   EXPECT_EQ(cache.get(1), "");
@@ -80,7 +80,7 @@ TEST(ExpireOldestTest, ExpireOldest) {
   ExpireLRUCache<int, std::string> cache(5, 10, [] (int, std::string){});
   cache.add(1, "aaa");
   cache.add(2, "bbb");
-  
+
   EXPECT_EQ(cache.get(1), "aaa");
   EXPECT_EQ(cache.get(2), "bbb");
   std::this_thread::sleep_for(std::chrono::milliseconds(9));
@@ -99,7 +99,7 @@ TEST(ExpireOldestTest, ExpireOldest) {
 TEST(ExpireCallbackTest, ExpireCallback) {
   int key = 0;
   std::string value;
-  ExpireLRUCache<int, std::string> cache(5, 10, 
+  ExpireLRUCache<int, std::string> cache(5, 10,
     [&] (int k, std::string v){
       key = k;
       value = v;

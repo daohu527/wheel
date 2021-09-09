@@ -23,8 +23,8 @@ namespace wheel {
 namespace timer {
 
 TEST(Timer, init) {
-
+  // todo
 }
 
-}  // namespace timer 
+}  // namespace timer
 }  // namespace wheel

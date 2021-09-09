@@ -49,7 +49,7 @@ class SPSCQueue {
   bool enqueue(const T& t);
 
   // Consumer only
-  bool dequeue(T& t);
+  bool dequeue(T& t); // NOLINT: pass reference to get value
 
   bool empty() const;
 
@@ -62,10 +62,10 @@ class SPSCQueue {
  private:
   using index_type = uint32_t;
   using AtomicIndex = std::atomic<index_type>;
-  
+
   index_type nextIndex(index_type index) {
     index += 1;
-    while(index >= size_) {
+    while (index >= size_) {
       index -= size_;
     }
     return index;
@@ -74,7 +74,7 @@ class SPSCQueue {
  private:
   const std::size_t size_;
   T* const storage_;
-  
+
   // todo(daohu527): need to check alignas
   alignas(LOCKFREE_CACHELINE_BYTES) AtomicIndex head_;
   alignas(LOCKFREE_CACHELINE_BYTES) AtomicIndex tail_;
@@ -95,7 +95,7 @@ bool SPSCQueue<T>::enqueue(const T& t) {
 }
 
 template <typename T>
-bool SPSCQueue<T>::dequeue(T& t) {
+bool SPSCQueue<T>::dequeue(T& t) {  // NOLINT
   auto cur_head = head_.load(std::memory_order_relaxed);
   if (cur_head == tail_.load(std::memory_order_acquire))
     return false;
@@ -120,7 +120,7 @@ std::size_t SPSCQueue<T>::size() const {
           - head_.load(std::memory_order_relaxed);
   if (diff > 0)
     return diff;
-  
+
   return diff + capacity();
 }
 

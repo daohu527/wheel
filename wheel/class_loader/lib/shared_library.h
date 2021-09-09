@@ -30,8 +30,7 @@ namespace class_loader {
 
 class SharedLibrary {
  public:
-	enum Flags
-	{
+  enum Flags {
     SHLIB_GLOBAL = 1,
       /// On platforms that use dlopen(), use RTLD_GLOBAL. This is the default
       /// if no flags are given.
@@ -41,12 +40,13 @@ class SharedLibrary {
     SHLIB_LOCAL  = 2,
       /// On platforms that use dlopen(), use RTLD_LOCAL instead of RTLD_GLOBAL.
       ///
-      /// Note that if this flag is specified, RTTI (including dynamic_cast and throw) will
-      /// not work for types defined in the shared library with GCC and possibly other
-      /// compilers as well. See http://gcc.gnu.org/faq.html#dso for more information.
+      /// Note that if this flag is specified, RTTI (including dynamic_cast and 
+      /// throw) will not work for types defined in the shared library with GCC 
+      /// and possibly other compilers as well. 
+      /// See http://gcc.gnu.org/faq.html#dso for more information.
       ///
       /// This flag is ignored on platforms that do not use dlopen().
-	};
+  }
 
   SharedLibrary() = default;
   ~SharedLibrary() = default;
@@ -69,10 +69,11 @@ class SharedLibrary {
   void* getSymbol(const std::string& name);
 
   const std::string& getPath() const;
+
  private:
   std::string path_;
   void* handle_;
-  mutable std::mutex mutex_; 
+  mutable std::mutex mutex_;
 };
 
 

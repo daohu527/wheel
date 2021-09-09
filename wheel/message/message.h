@@ -15,7 +15,9 @@
 //  Created Date: 2021-8-28
 //  Author: daohu527
 
-#pragma once 
+#pragma once
+
+#include <string>
 
 
 namespace wheel {

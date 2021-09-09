@@ -15,8 +15,9 @@
 //  Created Date: 2021-8-25
 //  Author: daohu527
 
-#pragma once 
+#pragma once
 
+#include <list>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -46,7 +47,7 @@ class TimeWheel {
   void schedule();
 
  private:
-  // default interval 1ms  
+  // default interval 1ms
   static constexpr int DEFAULT_TICK_INTERVAL = 1;
   static constexpr int MILLISECOND_BUCKET_SIZE = 1000;
   static constexpr int SECOND_BUCKET_SIZE = 60;
@@ -64,7 +65,7 @@ class TimeWheel {
 
   std::thread wheel_thread_;
 
- DECLARE_SINGLETON(TimeWheel)
+  DECLARE_SINGLETON(TimeWheel)
 };
 
 

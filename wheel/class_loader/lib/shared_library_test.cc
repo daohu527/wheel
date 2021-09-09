@@ -24,9 +24,9 @@
 #include "class_loader/lib/exceptions.h"
 
 TEST(SharedLibrary, load) {
-
+  // todo
 }
 
 TEST(SharedLibrary, unLoad) {
-
+  // todo
 }

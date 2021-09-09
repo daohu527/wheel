@@ -22,6 +22,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <utility>
 
 
 namespace wheel {
@@ -75,9 +76,9 @@ class ObjectPool {
     assert(capacity_ <= peak_capacity_);
   }
 
-  ObjectPool(size_type capacity, 
-             size_type peak_capacity, 
-             F factory, 
+  ObjectPool(size_type capacity,
+             size_type peak_capacity,
+             F factory,
              Predicate pred)
       : capacity_(capacity),
         peak_capacity_(peak_capacity),

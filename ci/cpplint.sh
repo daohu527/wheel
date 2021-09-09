@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-cpplint ../wheel
+cpplint --recursive ./wheel

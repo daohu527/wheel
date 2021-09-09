@@ -23,7 +23,7 @@ namespace wheel {
 namespace base {
 
 struct Object {
- int x;
+  int x;
 };
 
 TEST(ObjectPool, init) {
@@ -31,7 +31,7 @@ TEST(ObjectPool, init) {
   EXPECT_EQ(pool.capacity(), 5);
   EXPECT_EQ(pool.peak_capacity(), 10);
   EXPECT_EQ(pool.size(), 0);
-  
+
   Object* obj = pool.borrowObject();
   EXPECT_TRUE(obj);
   EXPECT_EQ(pool.size(), 1);

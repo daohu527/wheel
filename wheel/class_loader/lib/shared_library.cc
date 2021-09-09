@@ -19,7 +19,7 @@
 //  Author: daohu527
 
 #include "class_loader/lib/exceptions.h"
-
+#include "class_loader/lib/shared_library.h"
 
 namespace wheel {
 namespace class_loader {
@@ -77,7 +77,7 @@ bool SharedLibrary::hasSymbol(const std::string& name) {
 void* SharedLibrary::getSymbol(const std::string& name) {
   std::lock_guard<std::mutex> lock(mutex_);
 
-	void* result = 0;
+  void* result = 0;
   if (handle_) {
     result = dlsym(handle_, name.c_str());
     if ((char* error = dlerror()) != nullptr) {

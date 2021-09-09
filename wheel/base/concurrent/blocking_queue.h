@@ -31,7 +31,7 @@ class BlockingQueue {
   BlockingQueue(const BlockingQueue&) = delete;
   BlockingQueue& operator=(const BlockingQueue&) = delete;
 
-  explicit BlockingQueue(uint64_t capacity) 
+  explicit BlockingQueue(uint64_t capacity)
       : capacity_(capacity), head_(0), tail_(0), size_(0) {
     data_ = new T[capacity];
   }
@@ -52,7 +52,7 @@ class BlockingQueue {
   size_t size() const { return size_.load(); }
 
   size_t capacity() const { return capacity_; }
- 
+
  private:
   void wait();
 
@@ -77,9 +77,9 @@ void BlockingQueue<T>::enqueue(const T& t) {
     size_--;
   }
 
-  // enqueue 
+  // enqueue
   uint64_t old_head = head_.load();
-  while(!head_.compare_exchange_weak(old_head, old_head + 1)) {
+  while (!head_.compare_exchange_weak(old_head, old_head + 1)) {
 
   }
   data_[old_head % capacity_] = t;
@@ -95,7 +95,7 @@ T BlockingQueue<T>::dequeue() {
   // wait for condition
   wait();
 
-  // 
+  // tail
   uint64_t old_tail = tail_.load();
   while(!tail_.compare_exchange_weak(old_tail, old_tail + 1)) {
 
@@ -108,7 +108,7 @@ T BlockingQueue<T>::dequeue() {
 template<typename T>
 void BlockingQueue<T>::wait() {
   std::unique_lock<std::mutex> lck(mutex_);
-  while(!size_.load()) {
+  while (!size_.load()) {
     cv_.wait(lck);
   }
 }

@@ -42,7 +42,7 @@ TEST(BlockingQueue, single) {
 
 TEST(BlockingQueue, overwrite) {
   auto q = new BlockingQueue<int>(5);
-  for(int i = 0; i < 6; i++) {
+  for (int i = 0; i < 6; i++) {
     q->enqueue(i);
   }
 
@@ -54,7 +54,7 @@ TEST(BlockingQueue, overwrite) {
 }
 
 TEST(BlockingQueue, multithread) {
-
+  // todo
 }
 
 }    // namespace base
