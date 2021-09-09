@@ -26,5 +26,12 @@ Finally, we summarize the advantages of this project.
 1. Install bazel through this [doc](https://docs.bazel.build/versions/4.0.0/install-ubuntu.html).  
 2. Enter the `wheel` directory, and run the `./build.sh`.
 
+#### CI
+Use the following command to perform CI.
+```
+cd wheel
+bash ci/cpplint.sh
+```
+
 ## Contribute
 This project is still in the process of improvement. We will update the design document synchronously and gradually improve it！
