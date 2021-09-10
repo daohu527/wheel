@@ -19,6 +19,7 @@
 
 #include <list>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include "timer/ticket.h"
@@ -29,7 +30,7 @@ namespace timer {
 class Bucket {
  public:
   // Get tasks to be scheduled
-  void checkTicketsAndRunTask();
+  void checkAndRun();
   void pickRenewTickets(std::list<TicketPtr>& tickets);
 
  private:
@@ -38,6 +39,7 @@ class Bucket {
 
 
  private:
+  std::mutex mutex_;
   std::unique_ptr<std::list<Ticket>> ticket_list_;
 };
 

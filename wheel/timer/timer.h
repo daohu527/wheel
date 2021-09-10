@@ -27,7 +27,6 @@ namespace timer {
 class Timer {
  public:
   enum TimeUnit {
-    minutes,
     seconds,
     milliseconds,
   };
@@ -64,7 +63,7 @@ class Timer {
   void cancel();
 
  private:
-  uint32_t convertUnit();
+  uint32_t getMilliseconds();
 
   void createTicket();
 

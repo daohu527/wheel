@@ -36,12 +36,10 @@ TimeWheel::~TimeWheel() {
 }
 
 bool TimeWheel::addTicket(TicketPtr ticket_ptr) {
-  std::lock_guard<std::mutex> lock(mutex_);
   // add ticket to bucket
 }
 
 bool TimeWheel::delTicket(TicketPtr ticket_ptr) {
-  std::lock_guard<std::mutex> lock(mutex_);
   // del ticket to bucket
 }
 
@@ -71,7 +69,7 @@ void TimeWheel::schedule() {
 
     // 2. run timeout task
     Bucket& bucket = buckets_[millisecond_index_];
-    bucket.checkTicketsAndRunTask();
+    bucket.checkAndRun();
 
     // 3. book new tickets
     std::list<TicketPtr> tickets;

@@ -20,7 +20,7 @@
 namespace wheel {
 namespace timer {
 
-void Bucket::checkTicketsAndRunTask() {
+void Bucket::checkAndRun() {
 
 }
 
