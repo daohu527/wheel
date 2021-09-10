@@ -31,6 +31,8 @@ namespace timer {
 
 class TimeWheel {
  public:
+  using TickTime = std::chrono::duration<std::chrono::milliseconds>;
+
   TimeWheel();
   virtual ~TimeWheel();
 
@@ -61,7 +63,7 @@ class TimeWheel {
   uint32_t second_index_;
   uint32_t minute_index_;
 
-  std::chrono::duration<std::chrono::milliseconds> interval_;
+  TickTime tick_time_;
 
   std::thread wheel_thread_;
 

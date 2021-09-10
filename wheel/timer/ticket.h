@@ -38,7 +38,7 @@ class Ticket {
         task_(task),
         interval_(interval),
         is_one_shot_(is_one_shot),
-        remain_round_(0),
+        remain_rounds_(0),
         state_(0) {}
 
   ~Ticket();
@@ -46,12 +46,15 @@ class Ticket {
   Ticket(const Ticket&) = delete;
   Ticket& operator=(const Ticket&) = delete;
 
+  uint64_t duration() const;
+
  private:
   TicketId ticket_id_;
   Task task_;
   uint64_t interval_;
   bool is_one_shot_;
-  uint64_t remain_round_;
+  uint64_t remain_rounds_;
+  uint32_t delay_time_;
 
   // 0: not run yet
   // 1: running

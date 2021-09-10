@@ -61,7 +61,7 @@ class Timer {
 
   void start();
 
-  void stop();
+  void cancel();
 
  private:
   uint32_t convertUnit();

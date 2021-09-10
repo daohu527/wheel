@@ -15,31 +15,19 @@
 //  Created Date: 2021-9-9
 //  Author: daohu527
 
-#pragma once
-
-#include <list>
-#include <memory>
-#include <vector>
-
-#include "timer/ticket.h"
+#include "wheel/timer/bucket.h"
 
 namespace wheel {
 namespace timer {
 
-class Bucket {
- public:
-  // Get tasks to be scheduled
-  void checkTicketsAndRunTask();
-  void pickRenewTickets(std::list<TicketPtr>& tickets);
+void Bucket::checkTicketsAndRunTask() {
 
- private:
-  bool checkTickets();
-  void runTimeoutTask();
+}
 
+void Bucket::pickRenewTickets(std::list<TicketPtr>& tickets) {
 
- private:
-  std::unique_ptr<std::list<Ticket>> ticket_list_;
-};
+}
+
 
 }  // namespace timer
 }  // namespace wheel

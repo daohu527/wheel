@@ -47,7 +47,7 @@ bool TimeWheel::delTicket(TicketPtr ticket_ptr) {
 
 void TimeWheel::tick() {
   // sleep
-  std::this_thread::sleep_for(interval_);
+  std::this_thread::sleep_for(tick_time_);
 
   // update index
   millisecond_index_++;
@@ -70,11 +70,12 @@ void TimeWheel::schedule() {
     tick();
 
     // 2. run timeout task
-    buckets_[millisecond_index_].checkAndRun();
+    Bucket& bucket = buckets_[millisecond_index_];
+    bucket.checkTicketsAndRunTask();
 
     // 3. book new tickets
     std::list<TicketPtr> tickets;
-    buckets_[millisecond_index_].rebookTickets(tickets);
+    bucket.pickRenewTickets(tickets);
     for (TicketPtr ticket_p : tickets) {
       addTicket(ticket_p);
     }
