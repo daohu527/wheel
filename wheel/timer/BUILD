@@ -1,13 +1,25 @@
 
 cc_library(
+  name = "bucket",
+  hdrs = [
+    "bucket.h",
+  ],
+  srcs = [
+    "bucket.cc",
+  ]
+)
+
+cc_library(
   name = "time_wheel",
   hdrs = [
     "time_wheel.h",
-    "bucket.h",
     "ticket.h",
   ],
   srcs = [
     "time_wheel.cc",
+  ],
+  deps = [
+    ":bucket",
   ]
 )
 
@@ -22,4 +34,16 @@ cc_library(
   deps = [
     ":time_wheel",
   ]
+)
+
+cc_test(
+  name = "timer_test",
+  size = "small",
+  srcs = [
+    "timer_test.cc",
+  ],
+  deps = [
+    ":timer",
+    "@com_google_googletest//:gtest_main",
+  ],
 )
