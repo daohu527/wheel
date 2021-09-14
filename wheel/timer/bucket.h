@@ -18,9 +18,7 @@
 #pragma once
 
 #include <list>
-#include <memory>
 #include <mutex>
-#include <vector>
 
 #include "timer/ticket.h"
 
@@ -29,18 +27,20 @@ namespace timer {
 
 class Bucket {
  public:
-  // Get tasks to be scheduled
-  void checkAndRun();
-  void pickRenewTickets(std::list<TicketPtr>& tickets);
+  Bucket() = default;
+  ~Bucket() = default;
 
- private:
-  bool checkTickets();
-  void runTimeoutTask();
+  Bucket(const Bucket&) = delete;
+  Bucket& operator=(const Bucket&) = delete;
 
+  // pick tickets from bucket
+  void pickTickets(std::list<TicketPtr>& tickets);
+
+  void addTicket(const TicketPtr& ptr);
 
  private:
   std::mutex mutex_;
-  std::unique_ptr<std::list<Ticket>> ticket_list_;
+  std::list<TicketPtr> ticket_ptrs_;
 };
 
 }  // namespace timer

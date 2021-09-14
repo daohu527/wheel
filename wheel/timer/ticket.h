@@ -32,29 +32,54 @@ class Ticket {
   using TicketId = uint64_t;
   using Task = std::function<void(void)>;
 
+  enum State {
+    INIT,
+    RUNNING,
+    REMOVED,
+  };
+
   // todo(daohu527) : how to generate ticket id?
-  Ticket(Task task, uint64_t duration, bool is_one_shot)
+  Ticket(Task task, uint32_t duration, uint32_t delay_time, bool is_one_shot)
       : ticket_id_(0),
         task_(task),
         duration_(duration),
+        delay_time_(delay_time),
         is_one_shot_(is_one_shot),
-        remain_rounds_(0),
-        state_(0) {}
+        state_(Ticket::INIT) {
+    assert(duration_ > 0);
+  }
 
-  ~Ticket();
+  ~Ticket() = default;
 
   Ticket(const Ticket&) = delete;
   Ticket& operator=(const Ticket&) = delete;
 
-  uint64_t duration() const;
+  uint32_t duration() const {
+    return duration_;
+  }
+
+  bool isOneShot() const {
+    return is_one_shot_;
+  }
+
+  const Task& task() const {
+    return task_;
+  }
+
+  void setState(State state) {
+    state_ = state;
+  }
+
+  bool valid() {
+    return state_ != Ticket::REMOVED;
+  }
 
  private:
   TicketId ticket_id_;
   Task task_;
-  uint64_t duration_;
-  bool is_one_shot_;
-  uint64_t remain_rounds_;
+  uint32_t duration_;
   uint32_t delay_time_;
+  bool is_one_shot_;
 
   // 0: not run yet
   // 1: running

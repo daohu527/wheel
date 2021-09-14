@@ -48,7 +48,8 @@ uint32_t Timer::getMilliseconds() {
 
 void Timer::createTicket() {
   uint32_t duration = getMilliseconds();
-  ticket_ptr_ = std::make_shared<Ticket>(task_, duration, is_one_shot_);
+  ticket_ptr_ = std::make_shared<Ticket>(
+                    task_, duration, delay_time_, is_one_shot_);
 }
 
 

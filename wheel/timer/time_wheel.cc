@@ -23,24 +23,46 @@ namespace timer {
 TimeWheel::TimeWheel()
     : millisecond_index_(0),
       second_index_(0),
-      minute_index_(0),
-      interval_(std::chrono::milliseconds{DEFAULT_TICK_INTERVAL}) {
-  // 1. create a thread
-  std::thread wheel_thread_ = std::thread(TimeWheel::schedule);
-  // 2. start to schedule
+      tick_time_(TickTime{TICK_INTERVAL}),
+      stop_(false) {
+  // create thread and detach
+  std::thread wheel_thread_(TimeWheel::schedule);
   wheel_thread_.detach();
 }
 
 TimeWheel::~TimeWheel() {
-  // release wheel_thread_
+  // stop wheel_thread_
+  stop_ = true;
+}
+
+void TimeWheel::moveTickets() {
+  std::list<TicketPtr> ticket_ptrs;
+  sbuckets_[second_index_].pickTickets(ticket_ptrs);
+  for (const TicketPtr ticket_ptr : ticket_ptrs) {
+    uint32_t interval = ticket_ptr->duration() / TICK_INTERVAL;
+    int index = interval % MILLISECOND_BUCKET_SIZE;
+    mbuckets_[index].addTicket(ticket_ptr);
+  }
 }
 
 bool TimeWheel::addTicket(TicketPtr ticket_ptr) {
-  // add ticket to bucket
+  assert(ticket_ptr != nullptr);
+  ticket_ptr->setState(Ticket::INIT);
+
+  uint32_t interval = ticket_ptr->duration() / TICK_INTERVAL;
+  int index_s = (millisecond_index_ + interval) / MILLISECOND_BUCKET_SIZE;
+  int index = second_index_ + index_s;
+  // todo(daohu527): we do not support 2 round
+  if (index >= SECOND_BUCKET_SIZE)
+    index -= SECOND_BUCKET_SIZE;
+  sbuckets_[index].addTicket(ticket_ptr);
+
+  moveTickets();
 }
 
 bool TimeWheel::delTicket(TicketPtr ticket_ptr) {
-  // del ticket to bucket
+  assert(ticket_ptr != nullptr);
+  ticket_ptr->setState(Ticket::REMOVED);
 }
 
 void TimeWheel::tick() {
@@ -48,18 +70,19 @@ void TimeWheel::tick() {
   std::this_thread::sleep_for(tick_time_);
 
   // update index
-  millisecond_index_++;
+  ++millisecond_index_;
   if (millisecond_index_ >= MILLISECOND_BUCKET_SIZE) {
     millisecond_index_ = 0;
-    second_index_++;
+    ++second_index_;
     if (second_index_ >= SECOND_BUCKET_SIZE) {
       second_index_ = 0;
-      minute_index_++;
-      if (minute_index_ >= MINUTE_BUCKET_SIZE) {
-        minute_index_ = 0;
-      }
     }
+    moveTickets();
   }
+}
+
+void TimeWheel::runTimeoutTask(const TicketPtr ticket_ptr) {
+  std::async(ticket_ptr->task());
 }
 
 void TimeWheel::schedule() {
@@ -67,19 +90,23 @@ void TimeWheel::schedule() {
     // 1. tick
     tick();
 
-    // 2. run timeout task
-    Bucket& bucket = buckets_[millisecond_index_];
-    bucket.checkAndRun();
+    // 2. if stop then break
+    if (stop_)
+      break;
 
-    // 3. book new tickets
-    std::list<TicketPtr> tickets;
-    bucket.pickRenewTickets(tickets);
-    for (TicketPtr ticket_p : tickets) {
-      addTicket(ticket_p);
+    // 3. pick tickets and run timeout task
+    std::list<TicketPtr> ticket_ptrs;
+    mbuckets_[millisecond_index_].pickTickets(ticket_ptrs);
+    for (const TicketPtr ticket_ptr : ticket_ptrs) {
+      if (ticket_ptr->valid()) {
+        runTimeoutTask(ticket_ptr);
+        // book new tickets
+        if(!ticket_ptr->isOneShot())
+          addTicket(ticket_ptr);
+      }
     }
   }
 }
-
 
 }  // namespace timer
 }  // namespace wheel

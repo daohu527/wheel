@@ -20,12 +20,14 @@
 namespace wheel {
 namespace timer {
 
-void Bucket::checkAndRun() {
-
+void Bucket::pickTickets(std::list<TicketPtr>& ticket_ptrs) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  std::swap(ticket_ptrs_, ticket_ptrs);
 }
 
-void Bucket::pickRenewTickets(std::list<TicketPtr>& tickets) {
-
+void Bucket::addTicket(const TicketPtr& ptr) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  ticket_ptrs_.push_back(ptr);
 }
 
 

@@ -24,6 +24,9 @@ So we only keep `seconds` and `milliseconds`.
 #### ticket
 We can wrapper the callback in timer and get a new callable function, which will more simple to ticket. For example we can use `std::function<void(void)>` to a callback.
 
+#### callback
+(todo) Most callbacks need to carry parameters, although lambada functions can also meet our needs. In the future consider changing to a callback with parameters.
+
 ## Testcase
 1. create a timer and run one shot
 2. delay start

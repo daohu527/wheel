@@ -19,7 +19,6 @@
 
 #include <list>
 #include <memory>
-#include <mutex>
 #include <thread>
 
 #include "base/macros.h"
@@ -31,7 +30,7 @@ namespace timer {
 
 class TimeWheel {
  public:
-  using TickTime = std::chrono::duration<std::chrono::milliseconds>;
+  using TickTime = std::chrono::milliseconds;
 
   TimeWheel();
   ~TimeWheel();
@@ -44,27 +43,33 @@ class TimeWheel {
   bool delTicket(TicketPtr ticket_ptr);
 
  private:
+  // time wheel main process
   void schedule();
 
   // timer tick
   void tick();
 
+  void moveTickets();
+
+  void runTimeoutTask(const TicketPtr ticket_ptr);
+
  private:
   // default interval 1ms
-  static constexpr int DEFAULT_TICK_INTERVAL = 1;
-  static constexpr int MILLISECOND_BUCKET_SIZE = 1000;
-  static constexpr int SECOND_BUCKET_SIZE = 60;
-  static constexpr int MINUTE_BUCKET_SIZE = 60;
+  static constexpr int TICK_INTERVAL = 1;
+  static constexpr int MILLISECOND_BUCKET_SIZE = 512;
+  static constexpr int SECOND_BUCKET_SIZE = 256;
 
-  Bucket buckets_[MILLISECOND_BUCKET_SIZE];
+  Bucket mbuckets_[MILLISECOND_BUCKET_SIZE];
+  Bucket sbuckets_[SECOND_BUCKET_SIZE];
 
   uint32_t millisecond_index_;
   uint32_t second_index_;
-  uint32_t minute_index_;
 
   TickTime tick_time_;
 
   std::thread wheel_thread_;
+
+  bool stop_;
 
   DECLARE_SINGLETON(TimeWheel)
 };
