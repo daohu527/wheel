@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <atomic>
 #include <memory>
 #include <functional>
@@ -25,7 +26,6 @@
 namespace wheel {
 namespace timer {
 
-typedef TicketPtr std::shared_ptr<Ticket>;
 
 class Ticket {
  public:
@@ -86,6 +86,8 @@ class Ticket {
   // 2: removed
   std::atomic<uint8_t> state_;
 };
+
+typedef std::shared_ptr<Ticket> TicketPtr;
 
 }  // namespace timer
 }  // namespace wheel

@@ -32,11 +32,7 @@ class TimeWheel {
  public:
   using TickTime = std::chrono::milliseconds;
 
-  TimeWheel();
   ~TimeWheel();
-
-  TimeWheel(const TimeWheel&) = delete;
-  TimeWheel& operator=(const TimeWheel&) = delete;
 
   bool addTicket(TicketPtr ticket_ptr);
 

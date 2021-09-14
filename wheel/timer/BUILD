@@ -1,8 +1,10 @@
+package(default_visibility = ["//visibility:public"])
 
 cc_library(
   name = "bucket",
   hdrs = [
     "bucket.h",
+    "ticket.h",
   ],
   srcs = [
     "bucket.cc",
@@ -13,13 +15,13 @@ cc_library(
   name = "time_wheel",
   hdrs = [
     "time_wheel.h",
-    "ticket.h",
   ],
   srcs = [
     "time_wheel.cc",
   ],
   deps = [
     ":bucket",
+    "//base:macros",
   ]
 )
 
