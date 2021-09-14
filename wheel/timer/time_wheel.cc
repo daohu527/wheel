@@ -15,10 +15,14 @@
 //  Created Date: 2021-9-9
 //  Author: daohu527
 
+#include <future>
+
 #include "timer/time_wheel.h"
 
 namespace wheel {
 namespace timer {
+
+constexpr int TimeWheel::TICK_INTERVAL;
 
 TimeWheel::TimeWheel()
     : millisecond_index_(0),
@@ -26,7 +30,7 @@ TimeWheel::TimeWheel()
       tick_time_(TickTime{TICK_INTERVAL}),
       stop_(false) {
   // create thread and detach
-  std::thread wheel_thread_(TimeWheel::schedule);
+  std::thread wheel_thread_(&TimeWheel::schedule, &TimeWheel::instance());
   wheel_thread_.detach();
 }
 
@@ -58,11 +62,13 @@ bool TimeWheel::addTicket(TicketPtr ticket_ptr) {
   sbuckets_[index].addTicket(ticket_ptr);
 
   moveTickets();
+  return true;
 }
 
 bool TimeWheel::delTicket(TicketPtr ticket_ptr) {
   assert(ticket_ptr != nullptr);
   ticket_ptr->setState(Ticket::REMOVED);
+  return true;
 }
 
 void TimeWheel::tick() {
