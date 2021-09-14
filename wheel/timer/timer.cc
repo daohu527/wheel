@@ -26,17 +26,14 @@ void Timer::start() {
   TimeWheel::instance().addTicket(ticket_ptr_);
 }
 
-void Timer::stop() {
+void Timer::cancel() {
   // delete task from timewheel
   TimeWheel::instance().delTicket(ticket_ptr_);
 }
 
-uint32_t Timer::convertUnit() {
+uint32_t Timer::getMilliseconds() {
   uint32_t interval_mills = interval_;
   switch (unit_) {
-    case Timer::minutes:
-      interval_mills *= 60*1000;
-      break;
     case Timer::seconds:
       interval_mills *= 1000;
       break;
@@ -50,8 +47,9 @@ uint32_t Timer::convertUnit() {
 }
 
 void Timer::createTicket() {
-  uint32_t interval_p = convertUnit();
-  ticket_ptr_ = std::make_shared<Ticket>(task_, interval_p, is_one_shot_);
+  uint32_t duration = getMilliseconds();
+  ticket_ptr_ = std::make_shared<Ticket>(
+                    task_, duration, delay_time_, is_one_shot_);
 }
 
 

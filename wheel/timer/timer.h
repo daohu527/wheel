@@ -27,7 +27,6 @@ namespace timer {
 class Timer {
  public:
   enum TimeUnit {
-    minutes,
     seconds,
     milliseconds,
   };
@@ -37,10 +36,13 @@ class Timer {
         interval_(interval),
         unit_(unit),
         delay_time_(0),
-        is_one_shot_(is_one_shot) {
+        is_one_shot_(is_one_shot),
+        ticket_ptr_(nullptr) {
+    assert(interval > 0);
     createTicket();
   }
 
+  // add 'delay_time' for constructor
   Timer(Ticket::Task task,
         uint32_t interval,
         TimeUnit unit,
@@ -50,7 +52,9 @@ class Timer {
         interval_(interval),
         unit_(unit),
         delay_time_(delay_time),
-        is_one_shot_(is_one_shot) {
+        is_one_shot_(is_one_shot),
+        ticket_ptr_(nullptr) {
+    assert(interval > 0);
     createTicket();
   }
 
@@ -61,10 +65,10 @@ class Timer {
 
   void start();
 
-  void stop();
+  void cancel();
 
  private:
-  uint32_t convertUnit();
+  uint32_t getMilliseconds();
 
   void createTicket();
 

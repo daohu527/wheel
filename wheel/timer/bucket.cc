@@ -15,33 +15,21 @@
 //  Created Date: 2021-9-9
 //  Author: daohu527
 
-#pragma once
-
-#include <list>
-#include <mutex>
-
-#include "timer/ticket.h"
+#include "wheel/timer/bucket.h"
 
 namespace wheel {
 namespace timer {
 
-class Bucket {
- public:
-  Bucket() = default;
-  ~Bucket() = default;
+void Bucket::pickTickets(std::list<TicketPtr>& ticket_ptrs) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  std::swap(ticket_ptrs_, ticket_ptrs);
+}
 
-  Bucket(const Bucket&) = delete;
-  Bucket& operator=(const Bucket&) = delete;
+void Bucket::addTicket(const TicketPtr& ptr) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  ticket_ptrs_.push_back(ptr);
+}
 
-  // pick tickets from bucket
-  void pickTickets(std::list<TicketPtr>& tickets);
-
-  void addTicket(const TicketPtr& ptr);
-
- private:
-  std::mutex mutex_;
-  std::list<TicketPtr> ticket_ptrs_;
-};
 
 }  // namespace timer
 }  // namespace wheel
