@@ -15,30 +15,18 @@
 //  Created Date: 2021-9-15
 //  Author: daohu527
 
-#pragma once
-
-#include <string>
-
-#include "class_loader/class_loader_core.h"
-
+#include "class_loader/class_loader.h"
 
 namespace wheel {
 namespace class_loader {
 
-class Classloader {
- public:
-  const std::string& getLibraryPath() {
-    return library_path_;
-  }
+void Classloader::loadLibrary() {
 
-  void loadLibrary();
+}
 
-  int unloadLibrary();
+int Classloader::unloadLibrary() {
 
- private:
-  std::string library_path_;
-
-};
+}
 
 
 }  // namespace class_loader

@@ -19,27 +19,42 @@
 
 #include <string>
 
-#include "class_loader/class_loader_core.h"
-
 
 namespace wheel {
 namespace class_loader {
 
-class Classloader {
- public:
-  const std::string& getLibraryPath() {
-    return library_path_;
-  }
+class Classloader; // forward declaration
 
-  void loadLibrary();
+namespace impl {
 
-  int unloadLibrary();
+std::string getCurrentlyLoadingLibraryName() const;
 
- private:
-  std::string library_path_;
+void setCurrentlyLoadingLibraryName(const std::string& name);
 
-};
+template <typename Derived, typename Base>
+void registerPlugin(const std::string& derived_class_name,
+    const std::string& base_class_name) {
+
+}
+
+template <typename Base>
+Base* createInstance(const std::string& derived_class_name,
+    Classloader* class_loader) {
+
+}
+
+bool isLibraryLoaded(const std::string& library_path,
+    Classloader* class_loader) {
+
+}
+
+bool isLibraryLoadedByAnybody(const std::string& library_path);
+
+void loadLibrary(const std::string& library_path, Classloader* class_loader);
+
+void unloadLibrary(const std::string& library_path, Classloader* class_loader);
 
 
+}  // namespace impl
 }  // namespace class_loader
 }  // namespace wheel

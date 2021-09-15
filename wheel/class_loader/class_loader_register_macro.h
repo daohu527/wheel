@@ -12,7 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//  Created Date: 2021-9-8
+//  Created Date: 2021-9-15
 //  Author: daohu527
 
 #pragma once
+
+
+#define CLASS_LOADER_REGISTER_CLASS(Derived, Base) \
+  namespace { \
+    typedef Derived _derived; \
+    typedef Base _base; \
+    struct ProxyExec ## UniqueID \
+    { \
+      class_loader::impl::registerPlugin<_derived, _base>(#Derived, #Base); \
+    }; \
+    static ProxyExec ## UniqueID g_register_plugin_ ## UniqueID \
+  } // namespace
