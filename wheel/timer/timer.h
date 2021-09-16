@@ -79,7 +79,7 @@ class Timer {
   uint32_t delay_time_;
   bool is_one_shot_;
 
-  TimeWheel::TicketPtr ticket_ptr_;
+  TicketPtr ticket_ptr_;
 };
 
 }  // namespace timer
