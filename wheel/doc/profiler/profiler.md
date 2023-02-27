@@ -113,5 +113,16 @@ Because of program is always nested running. So how to save the cost in child bl
 
 Another solution would be to store all the chunks in memory and print them when the end of the proc is reached.
 
+8. Cost
+Test 1000 PERF_BLOCK() cost 735739ns, each cost `735ns`;
+```c++
+TEST(ProfilerTest, nested_block) {
+  PERF_BLOCK("inner_block")
+  for (int i = 0; i < 500; ++i) {
+    PERF_BLOCK("block")
+  }
+  PERF_BLOCK_END
+}
+```
 
 ## Testcase
